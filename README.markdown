@@ -15,8 +15,7 @@
 for Kinect and WPF-related stuff I use: 
 
 - KinectSDK 
-- Code4Fun 
-- Kinect Toolkit  
+- Code4Fun Kinect Toolkit  
 - Examples from KinectforWindowsSDK series
 
 for MIDI-related stuff I use this awesome library: [midi-dot-net](http://code.google.com/p/midi-dot-net/) 
