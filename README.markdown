@@ -2,7 +2,14 @@
 
 *a simple yet configurable toolkit that works with Kinect and interprets gesture recognition data into MIDI signals*
 
-**v 0.2** (current version)
+[video demos](http://www.youtube.com/user/apolotary)
+
+**v 0.3** (current version)
+
+- Simplified gesture recognition
+- Additions in MIDI-class
+
+**v 0.2**
 
 - Kinect skeletal tracking basics
 - Interpreting hands coordinates as notes
