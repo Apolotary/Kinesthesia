@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,6 +15,7 @@ using System.Windows.Shapes;
 using Kinesthesia.UI_Controllers;
 using Microsoft.Kinect;
 using Kinesthesia.Model.MIDI;
+using Kinesthesia.Model.GestureRecognition;
 using Coding4Fun.Kinect.Wpf; 
 
 namespace Kinesthesia
@@ -32,45 +34,33 @@ namespace Kinesthesia
         const int skeletonCount = 6;
         MidiManager midMan = new MidiManager();
         Skeleton[] allSkeletons = new Skeleton[skeletonCount];
+        private GestureRecognizer leftHandRecognizer;
+        private GestureRecognizer rightHandRecognizer;
+        private bool shouldTrack = false;
+        private string[] notes = {"C", "D", "E", "F", "G", "A", "B"};
+        private int currNote = 0;
+        private int currOctave = 5;
+        private int currVelocity = 80;
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
-            UpdateNoteRectangles();
+
+            leftHandRecognizer = new GestureRecognizer();
+            rightHandRecognizer = new GestureRecognizer();
+            rightHandRecognizer.FramesToCompare = 15;
+
+            leftHandRecognizer.XaxisIncreased += new EventHandler(ChangeVolume);
+            leftHandRecognizer.XaxisDecreased += new EventHandler(ChangeVolume);
+            leftHandRecognizer.YaxisIncreased += new EventHandler(BendPitch);
+            leftHandRecognizer.YaxisDecreased += new EventHandler(BendPitch);
+            
+            rightHandRecognizer.XaxisIncreased += new EventHandler(SendNote);
+            rightHandRecognizer.XaxisDecreased += new EventHandler(SendNote);
+            rightHandRecognizer.YaxisIncreased += new EventHandler(SendNote);
+            rightHandRecognizer.YaxisDecreased += new EventHandler(SendNote);
         }
         
-        private void UpdateNoteRectangles()
-        {
-            noteC.InsertNoteData("C", 6, 83, 0.9, 1.0, Brushes.DarkRed, Brushes.Green);
-            noteD.InsertNoteData("F", 6, 83, 0.9, 1.0, Brushes.DarkRed, Brushes.Green);
-            noteE.InsertNoteData("D#", 6, 83, 0.9, 1.0, Brushes.DarkRed, Brushes.Green);
-            noteF.InsertNoteData("G#", 6, 83, 0.9, 1.0, Brushes.DarkRed, Brushes.Green);
-            noteG.InsertNoteData("A#", 6, 83, 0.9, 1.0, Brushes.DarkRed, Brushes.Green);
-            noteA.InsertNoteData("C", 7, 83, 0.9, 1.0, Brushes.DarkRed, Brushes.Green);
-            noteB.InsertNoteData("B", 6, 83, 0.9, 1.0, Brushes.DarkRed, Brushes.Green);
-
-            noteC.RectangleTriggered += new EventHandler(SendNoteOn);
-            noteC.RectangleUntriggered += new EventHandler(SendNoteOff);
-
-            noteD.RectangleTriggered += new EventHandler(SendNoteOn);
-            noteD.RectangleUntriggered += new EventHandler(SendNoteOff);
-
-            noteE.RectangleTriggered += new EventHandler(SendNoteOn);
-            noteE.RectangleUntriggered += new EventHandler(SendNoteOff);
-
-            noteF.RectangleTriggered += new EventHandler(SendNoteOn);
-            noteF.RectangleUntriggered += new EventHandler(SendNoteOff);
-
-            noteG.RectangleTriggered += new EventHandler(SendNoteOn);
-            noteG.RectangleUntriggered += new EventHandler(SendNoteOff);
-
-            noteA.RectangleTriggered += new EventHandler(SendNoteOn);
-            noteA.RectangleUntriggered += new EventHandler(SendNoteOff);
-
-            noteB.RectangleTriggered += new EventHandler(SendNoteOn);
-            noteB.RectangleUntriggered += new EventHandler(SendNoteOff);
-        }
-
         private void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             KinectSensor old = (KinectSensor)e.OldValue;
@@ -100,27 +90,54 @@ namespace Kinesthesia
             }
         }
 
-        private void SendNoteOn (object sender, EventArgs e)
+        private void SendNote (object sender, EventArgs e)
         {
-            NoteRectangleControl noteRect = (NoteRectangleControl) sender;
-            NoteEventArgs ee = (NoteEventArgs) e;
+            GestureEventArgs ge = (GestureEventArgs)e;
 
-            noteRect.FillRectangle();
-            noteRect.SwitchSignal();
+            int octave = 640/7;
+            int note = octave/7;
+            int velocity = 480/127;
 
-            midMan.SendNoteOnMessage(ee.note, ee.octave, ee.velocity);
+            midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
+
+            currOctave = (int) ge.point.X/octave;
+            currNote = (int) ge.point.X/note - currOctave*7;
+            currVelocity = (int) ge.point.Y/velocity;
+
+            if (currOctave > 7) currOctave = 7;
+            if (currNote > 7) currNote = 7;
+            if (currVelocity > 127) currVelocity = 127;
+
+            midMan.SendNoteOnMessage(notes[currNote], currOctave, currVelocity);
+
+            logBlock.Text += "\n NOTE " + notes[currNote] + " OF OCTAVE " + currOctave + " VELOCITY " + currVelocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            ScrollBox();
         }
 
-        private void SendNoteOff(object sender, EventArgs e)
+        private void BendPitch (object sender, EventArgs e)
         {
-            NoteRectangleControl noteRect = (NoteRectangleControl)sender;
-            NoteEventArgs ee = (NoteEventArgs)e;
+            GestureEventArgs ge = (GestureEventArgs) e;
+            
+            int pitchPart = 16384/480;
+            midMan.SendPitchBend(pitchPart*(int)ge.point.Y);
 
-            noteRect.UnFillRectangle();
-            noteRect.SwitchSignal();
-
-            midMan.SendNoteOffMessage(ee.note, ee.octave, ee.velocity);
+            logBlock.Text += "\n PITCH BEND " + pitchPart * (int)ge.point.Y + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            ScrollBox();
         }
+
+        private void ChangeVolume (object sender, EventArgs e)
+        {
+            GestureEventArgs ge = (GestureEventArgs)e;
+            
+            int volumePart = 640/127;
+            int vol = (int)ge.point.X/volumePart;
+            
+
+            logBlock.Text += "\n CHANGE VOLUME " + vol + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            ScrollBox();
+        }
+        
+
 
         private void StopKinect(KinectSensor sensor)
         {
@@ -155,7 +172,9 @@ namespace Kinesthesia
                 return;
             }
 
-
+            Joint left = first.Joints[JointType.HandLeft];
+            Joint right = first.Joints[JointType.HandRight];
+            
             GetCameraPoint(first, e);
 
         }
@@ -203,27 +222,30 @@ namespace Kinesthesia
                 Point rightPoint = new Point(rightColorPoint.X, rightColorPoint.Y);
                 Point leftPoint = new Point(leftColorPoint.X, leftColorPoint.Y);
 
-                Point[] points = {leftPoint, rightPoint};
+                Point[] points = { leftPoint, rightPoint };
 
                 label2.Content = leftPoint.X;
                 label3.Content = leftPoint.Y;
                 label5.Content = rightPoint.X;
                 label6.Content = rightPoint.Y;
 
-                noteC.CheckIntersectionWithPoints(leftPoint);
-                //noteC.CheckIntersectionWithPoints(rightPoint);
-                noteD.CheckIntersectionWithPoints(leftPoint);
-                //noteD.CheckIntersectionWithPoints(rightPoint);
-                noteE.CheckIntersectionWithPoints(leftPoint);
-                //noteE.CheckIntersectionWithPoints(rightPoint);
-                noteF.CheckIntersectionWithPoints(leftPoint);
-                //noteF.CheckIntersectionWithPoints(rightPoint);
-                noteG.CheckIntersectionWithPoints(leftPoint);
-                //noteG.CheckIntersectionWithPoints(rightPoint);
-                noteA.CheckIntersectionWithPoints(leftPoint);
-                //noteA.CheckIntersectionWithPoints(rightPoint);
-                noteB.CheckIntersectionWithPoints(leftPoint);
-                //noteB.CheckIntersectionWithPoints(rightPoint);
+                if (shouldTrack)
+                {
+                    SkeletonPoint lpoint = new SkeletonPoint();
+                    lpoint.X = (float) leftPoint.X;
+                    lpoint.Y = (float) leftPoint.Y;
+                    lpoint.Z = 0;
+
+                    SkeletonPoint rpoint = new SkeletonPoint();
+                    rpoint.X = (float)rightPoint.X;
+                    rpoint.Y = (float)rightPoint.Y;
+                    rpoint.Z = 0;
+
+                    leftHandRecognizer.AddCoordinate(lpoint);
+                    rightHandRecognizer.AddCoordinate(rpoint);
+
+                    //logBlock.Text += "\n NEW POINT " + leftHandRecognizer.currPointNumber() + " X: " + point.X + " Y: " + point.Y;
+                }
             }
         }
 
@@ -255,8 +277,30 @@ namespace Kinesthesia
             StopKinect(kinectSensorChooser1.Kinect); 
         }
 
-
-
+        private void trackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!shouldTrack)
+            {
+                trackButton.Content = "Stop";
+                shouldTrack = true;
+                logBlock.Text = "Start Tracking";
+                ScrollBox();
+            }
+            else
+            {
+                midMan.SendPitchBend(8192);
+                midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
+                trackButton.Content = "Start";
+                shouldTrack = false;
+                logBlock.Text += "\n Stop Tracking";
+                ScrollBox();
+            }
+        }
         
+        public void ScrollBox()
+        {
+            logBlock.SelectionStart = logBlock.Text.Length;
+            logBlock.ScrollToEnd();
+        }
     }
 }
