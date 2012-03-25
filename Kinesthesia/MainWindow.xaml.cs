@@ -16,7 +16,9 @@ using Kinesthesia.UI_Controllers;
 using Microsoft.Kinect;
 using Kinesthesia.Model.MIDI;
 using Kinesthesia.Model.GestureRecognition;
-using Coding4Fun.Kinect.Wpf; 
+using Coding4Fun.Kinect.Wpf;
+using System.Reflection;
+using Kinesthesia.Model.ConfigManager;
 
 namespace Kinesthesia
 {
@@ -50,17 +52,32 @@ namespace Kinesthesia
             rightHandRecognizer = new GestureRecognizer();
             rightHandRecognizer.FramesToCompare = 15;
 
+            Type thisClass = this.GetType();
+            MethodInfo sendNoteMethod = thisClass.GetMethod("SendNote");
+            Type gestClass = rightHandRecognizer.GetType();
+            EventInfo xAxisEvent = gestClass.GetEvent("XaxisIncreased");
+
+            Delegate handler = Delegate.CreateDelegate(xAxisEvent.EventHandlerType, sendNoteMethod);
+            //xAxisEvent.AddEventHandler(this, handler);
+
             leftHandRecognizer.XaxisIncreased += new EventHandler(ChangeVolume);
             leftHandRecognizer.XaxisDecreased += new EventHandler(ChangeVolume);
             leftHandRecognizer.YaxisIncreased += new EventHandler(BendPitch);
             leftHandRecognizer.YaxisDecreased += new EventHandler(BendPitch);
-            
-            rightHandRecognizer.XaxisIncreased += new EventHandler(SendNote);
+
+            //rightHandRecognizer.XaxisIncreased += new EventHandler(SendNote);
             rightHandRecognizer.XaxisDecreased += new EventHandler(SendNote);
             rightHandRecognizer.YaxisIncreased += new EventHandler(SendNote);
             rightHandRecognizer.YaxisDecreased += new EventHandler(SendNote);
         }
         
+        private void ParseConfigs()
+        {
+            ConfigParser cParser = new ConfigParser();
+            List<ConfigContainer> cList = cParser.ParseSettingsFileTXT("default.txt");
+            logBlock.Text = cList[0].JointName;
+        }
+
         private void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             KinectSensor old = (KinectSensor)e.OldValue;

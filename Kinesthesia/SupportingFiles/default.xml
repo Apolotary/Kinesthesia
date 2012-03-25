@@ -1,0 +1,36 @@
+﻿<joint type="right_hand">
+	<action type="XaxisIncreased">
+		<threshold>10</threshold>
+		<method>SendNote</method>
+	</action>
+	<action type="XaxisDecreased">
+		<threshold>10</threshold>
+		<method>SendNote</method>
+	</action>
+	<action type="YaxisIncreased">
+		<threshold>10</threshold>
+		<method>SendNote</method>
+	</action>
+	<action type="YaxisDecreased">
+		<threshold>10</threshold>
+		<method>SendNote</method>
+	</action>
+</joint>
+<joint type="right_hand">
+	<action type="XaxisIncreased">
+		<threshold>10</threshold>
+		<method>ChangeVolume</method>
+	</action>
+	<action type="XaxisDecreased">
+		<threshold>10</threshold>
+		<method>ChangeVolume</method>
+	</action>
+	<action type="YaxisIncreased">
+		<threshold>10</threshold>
+		<method>BendPitch</method>
+	</action>
+	<action type="YaxisDecreased">
+		<threshold>10</threshold>
+		<method>BendPitch</method>
+	</action>
+</joint>

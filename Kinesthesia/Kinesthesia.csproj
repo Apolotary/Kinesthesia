@@ -62,6 +62,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\ConfigManager\ConfigContainer.cs" />
+    <Compile Include="Model\ConfigManager\ConfigParser.cs" />
     <Compile Include="Model\GestureRecognition\GestureEventArgs.cs" />
     <Compile Include="Model\GestureRecognition\GestureRecognizer.cs" />
     <Compile Include="UI+Controllers\NoteEventArgs.cs" />
@@ -118,6 +120,12 @@
       <Project>{4DE23893-27E7-423F-9BB6-BA21DAC2C45E}</Project>
       <Name>Microsoft.Samples.Kinect.WpfViewers</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="SupportingFiles\default.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="SupportingFiles\default.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
