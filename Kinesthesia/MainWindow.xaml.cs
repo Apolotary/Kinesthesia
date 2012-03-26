@@ -52,18 +52,18 @@ namespace Kinesthesia
             rightHandRecognizer = new GestureRecognizer();
             rightHandRecognizer.FramesToCompare = 15;
 
-            Type thisClass = this.GetType();
-            MethodInfo sendNoteMethod = thisClass.GetMethod("SendNote");
-            Type gestClass = rightHandRecognizer.GetType();
-            EventInfo xAxisEvent = gestClass.GetEvent("XaxisIncreased");
-
-            Delegate handler = Delegate.CreateDelegate(xAxisEvent.EventHandlerType, sendNoteMethod);
-            //xAxisEvent.AddEventHandler(this, handler);
-
             leftHandRecognizer.XaxisIncreased += new EventHandler(ChangeVolume);
             leftHandRecognizer.XaxisDecreased += new EventHandler(ChangeVolume);
             leftHandRecognizer.YaxisIncreased += new EventHandler(BendPitch);
             leftHandRecognizer.YaxisDecreased += new EventHandler(BendPitch);
+
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+            Type gestClass = typeof (GestureRecognizer);
+            EventInfo xAxisEvent = gestClass.GetEvent("XaxisIncreased", bindingFlags);
+
+            Delegate handler = Delegate.CreateDelegate(xAxisEvent.EventHandlerType, this, "SendNote");
+            xAxisEvent.AddEventHandler(rightHandRecognizer, handler);
 
             //rightHandRecognizer.XaxisIncreased += new EventHandler(SendNote);
             rightHandRecognizer.XaxisDecreased += new EventHandler(SendNote);
@@ -77,6 +77,54 @@ namespace Kinesthesia
             List<ConfigContainer> cList = cParser.ParseSettingsFileTXT("default.txt");
             logBlock.Text = cList[0].JointName;
         }
+
+        private void SendNote (object sender, EventArgs e)
+        {
+            GestureEventArgs ge = (GestureEventArgs)e;
+
+            int octave = 640/7;
+            int note = octave/7;
+            int velocity = 480/127;
+
+            midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
+
+            currOctave = (int) ge.point.X/octave;
+            currNote = (int) ge.point.X/note - currOctave*7;
+            currVelocity = (int) ge.point.Y/velocity;
+
+            if (currOctave > 7) currOctave = 7;
+            if (currNote > 7) currNote = 7;
+            if (currVelocity > 127) currVelocity = 127;
+
+            midMan.SendNoteOnMessage(notes[currNote], currOctave, currVelocity);
+
+            logBlock.Text += "\n NOTE " + notes[currNote] + " OF OCTAVE " + currOctave + " VELOCITY " + currVelocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            ScrollTheBox();
+        }
+
+        private void BendPitch (object sender, EventArgs e)
+        {
+            GestureEventArgs ge = (GestureEventArgs) e;
+            
+            int pitchPart = 16384/480;
+            midMan.SendPitchBend(pitchPart*(int)ge.point.Y);
+
+            logBlock.Text += "\n PITCH BEND " + pitchPart * (int)ge.point.Y + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            ScrollTheBox();
+        }
+
+        private void ChangeVolume (object sender, EventArgs e)
+        {
+            GestureEventArgs ge = (GestureEventArgs)e;
+            
+            int volumePart = 640/127;
+            int vol = (int)ge.point.X/volumePart;
+            
+
+            logBlock.Text += "\n CHANGE VOLUME " + vol + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            ScrollTheBox();
+        }
+
 
         private void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
@@ -106,55 +154,6 @@ namespace Kinesthesia
                 kinectSensorChooser1.AppConflictOccurred();
             }
         }
-
-        private void SendNote (object sender, EventArgs e)
-        {
-            GestureEventArgs ge = (GestureEventArgs)e;
-
-            int octave = 640/7;
-            int note = octave/7;
-            int velocity = 480/127;
-
-            midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
-
-            currOctave = (int) ge.point.X/octave;
-            currNote = (int) ge.point.X/note - currOctave*7;
-            currVelocity = (int) ge.point.Y/velocity;
-
-            if (currOctave > 7) currOctave = 7;
-            if (currNote > 7) currNote = 7;
-            if (currVelocity > 127) currVelocity = 127;
-
-            midMan.SendNoteOnMessage(notes[currNote], currOctave, currVelocity);
-
-            logBlock.Text += "\n NOTE " + notes[currNote] + " OF OCTAVE " + currOctave + " VELOCITY " + currVelocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
-            ScrollBox();
-        }
-
-        private void BendPitch (object sender, EventArgs e)
-        {
-            GestureEventArgs ge = (GestureEventArgs) e;
-            
-            int pitchPart = 16384/480;
-            midMan.SendPitchBend(pitchPart*(int)ge.point.Y);
-
-            logBlock.Text += "\n PITCH BEND " + pitchPart * (int)ge.point.Y + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
-            ScrollBox();
-        }
-
-        private void ChangeVolume (object sender, EventArgs e)
-        {
-            GestureEventArgs ge = (GestureEventArgs)e;
-            
-            int volumePart = 640/127;
-            int vol = (int)ge.point.X/volumePart;
-            
-
-            logBlock.Text += "\n CHANGE VOLUME " + vol + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
-            ScrollBox();
-        }
-        
-
 
         private void StopKinect(KinectSensor sensor)
         {
@@ -301,7 +300,7 @@ namespace Kinesthesia
                 trackButton.Content = "Stop";
                 shouldTrack = true;
                 logBlock.Text = "Start Tracking";
-                ScrollBox();
+                ScrollTheBox();
             }
             else
             {
@@ -310,11 +309,11 @@ namespace Kinesthesia
                 trackButton.Content = "Start";
                 shouldTrack = false;
                 logBlock.Text += "\n Stop Tracking";
-                ScrollBox();
+                ScrollTheBox();
             }
         }
         
-        public void ScrollBox()
+        private void ScrollTheBox()
         {
             logBlock.SelectionStart = logBlock.Text.Length;
             logBlock.ScrollToEnd();
