@@ -30,10 +30,26 @@ namespace Kinesthesia.Model.ConfigManager
         /// <summary>
         /// properties
         /// </summary>
-        public string JointName { get; set; }
-        public int Threshold { get; set; }
-        public string EventName { get; set; }
-        public string MethodName { get; set; }
+        public string JointName
+        {
+            get { return _jointName; }
+            set { _jointName = value; }
+        }
+        public int Threshold
+        {
+            get { return _threshold; }
+            set { _threshold = value; }
+        }
+        public string EventName
+        {
+            get { return _eventName; }
+            set { _eventName = value; }
+        }
+        public string MethodName
+        {
+            get { return _methodName; }
+            set { _methodName = value; }
+        }
 
         /// <summary>
         /// default constructor

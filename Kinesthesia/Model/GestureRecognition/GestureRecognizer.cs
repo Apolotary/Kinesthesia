@@ -55,9 +55,21 @@ namespace Kinesthesia.Model.GestureRecognition
 
         #region properties
 
-        public double Threshold { get; set; }
-        public int FramesToCompare { get; set; }
-        public Joint TrackedJoint { get; set; }
+        public double Threshold
+        {
+            get { return _threshold; }
+            set { _threshold = value; }
+        }
+        public int FramesToCompare
+        {
+            get { return _framesToCompare; }
+            set { _framesToCompare = value; }
+        }
+        public Joint TrackedJoint
+        {
+            get { return _trackedJoint; }
+            set { _trackedJoint = value; }
+        }
 
         #endregion
 
@@ -135,7 +147,7 @@ namespace Kinesthesia.Model.GestureRecognition
             {
                 if (lastPoint.X < firstPoint.X)
                 {
-                    //XaxisDecreased(this, gargs);
+                    XaxisDecreased(this, gargs);
                 }
                 else if (lastPoint.X > firstPoint.X)
                 {
@@ -146,11 +158,11 @@ namespace Kinesthesia.Model.GestureRecognition
             {
                 if (lastPoint.Y > firstPoint.Y)
                 {
-                    //YaxisIncreased(this, gargs);
+                    YaxisIncreased(this, gargs);
                 }
                 else if (lastPoint.Y < firstPoint.Y)
                 {
-                    //YaxisDecreased(this, gargs);
+                    YaxisDecreased(this, gargs);
                 }
             }
             _coordinatesList.Clear();

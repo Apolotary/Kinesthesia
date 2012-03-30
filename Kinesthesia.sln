@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kinesthesia", "Kinesthesia\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Samples.Kinect.WpfViewers", "Kinesthesia\3rd-party\KinectWpfViewers\Microsoft.Samples.Kinect.WpfViewers.csproj", "{4DE23893-27E7-423F-9BB6-BA21DAC2C45E}"
 EndProject
+Project("{F088123C-0E9E-452A-89E6-6BA2F21D5CAC}") = "KinesthesiaModelingProject", "KinesthesiaModelingProject\KinesthesiaModelingProject.modelproj", "{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,16 @@ Global
 		{4DE23893-27E7-423F-9BB6-BA21DAC2C45E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{4DE23893-27E7-423F-9BB6-BA21DAC2C45E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4DE23893-27E7-423F-9BB6-BA21DAC2C45E}.Release|x86.ActiveCfg = Release|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{73DF292C-F0CA-40E1-8A70-149CF5B4B3D0}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

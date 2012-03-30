@@ -66,6 +66,11 @@
     <Compile Include="Model\ConfigManager\ConfigParser.cs" />
     <Compile Include="Model\GestureRecognition\GestureEventArgs.cs" />
     <Compile Include="Model\GestureRecognition\GestureRecognizer.cs" />
+    <Compile Include="Model\MIDI\MidiPlayer.cs" />
+    <Compile Include="Model\MIDI\RawTempo.cs" />
+    <Compile Include="Model\MIDI\Track.cs" />
+    <Compile Include="Model\MIDI\MidiTextParser.cs" />
+    <Compile Include="Model\MIDI\RawNote.cs" />
     <Compile Include="UI+Controllers\NoteEventArgs.cs" />
     <Compile Include="UI+Controllers\NoteRectangleControl.xaml.cs">
       <DependentUpon>NoteRectangleControl.xaml</DependentUpon>
@@ -111,6 +116,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="SupportingFiles\123.csv" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="3rd-party\" />

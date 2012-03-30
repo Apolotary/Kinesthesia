@@ -34,7 +34,7 @@ namespace Kinesthesia
 
         bool closing = false;
         const int skeletonCount = 6;
-        MidiManager midMan = new MidiManager();
+        MidiManager midMan = MidiManager.Instance;
         Skeleton[] allSkeletons = new Skeleton[skeletonCount];
         private GestureRecognizer leftHandRecognizer;
         private GestureRecognizer rightHandRecognizer;
@@ -50,7 +50,10 @@ namespace Kinesthesia
 
             leftHandRecognizer = new GestureRecognizer();
             rightHandRecognizer = new GestureRecognizer();
-            rightHandRecognizer.FramesToCompare = 15;
+            rightHandRecognizer.FramesToCompare = 45;
+            leftHandRecognizer.FramesToCompare = 45;
+            rightHandRecognizer.Threshold = 50;
+            leftHandRecognizer.Threshold = 50;
 
             leftHandRecognizer.XaxisIncreased += new EventHandler(ChangeVolume);
             leftHandRecognizer.XaxisDecreased += new EventHandler(ChangeVolume);
@@ -59,7 +62,7 @@ namespace Kinesthesia
 
             var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-            Type gestClass = typeof (GestureRecognizer);
+            Type gestClass = typeof(GestureRecognizer);
             EventInfo xAxisEvent = gestClass.GetEvent("XaxisIncreased", bindingFlags);
 
             Delegate handler = Delegate.CreateDelegate(xAxisEvent.EventHandlerType, this, "SendNote");
@@ -69,13 +72,15 @@ namespace Kinesthesia
             rightHandRecognizer.XaxisDecreased += new EventHandler(SendNote);
             rightHandRecognizer.YaxisIncreased += new EventHandler(SendNote);
             rightHandRecognizer.YaxisDecreased += new EventHandler(SendNote);
+            ParseConfigs();
         }
         
         private void ParseConfigs()
         {
-            ConfigParser cParser = new ConfigParser();
-            List<ConfigContainer> cList = cParser.ParseSettingsFileTXT("default.txt");
-            logBlock.Text = cList[0].JointName;
+            MidiPlayer midiPl = new MidiPlayer();
+
+            midiPl.PlayMidiFileInTXT(@"C:\diploma\Kinesthesia\Kinesthesia\SupportingFiles\123.csv");
+            //logBlock.Text = Convert.ToString(trList[2].Notes[5].Note);
         }
 
         private void SendNote (object sender, EventArgs e)
@@ -188,11 +193,7 @@ namespace Kinesthesia
                 return;
             }
 
-            Joint left = first.Joints[JointType.HandLeft];
-            Joint right = first.Joints[JointType.HandRight];
-            
             GetCameraPoint(first, e);
-
         }
 
         void GetCameraPoint(Skeleton first, AllFramesReadyEventArgs e)
