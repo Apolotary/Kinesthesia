@@ -11,6 +11,7 @@ namespace Kinesthesia.Model.MIDI
     class Track
     {
         private List<RawNote> _notes;
+        private List<RawTempo> _tempos;
         private int _trackNumber;
         private int _overallLength;
 
@@ -18,6 +19,11 @@ namespace Kinesthesia.Model.MIDI
         {
             get { return _notes; }
             set { _notes = value; }
+        }
+        public List<RawTempo> Tempos
+        {
+            get { return _tempos; }
+            set { _tempos = value; }
         }
         public int TrackNumber
         {
@@ -33,18 +39,25 @@ namespace Kinesthesia.Model.MIDI
         public Track()
         {
             _notes = new List<RawNote>();
+            _tempos = new List<RawTempo>();
             _trackNumber = 0;
         }
 
-        public Track(List<RawNote> ns, int cn)
+        public Track(List<RawNote> ns, List<RawTempo> tps, int cn)
         {
             _notes = ns;
+            _tempos = tps;
             _trackNumber = cn;
         }
 
         public void AddNote(RawNote nt)
         {
             _notes.Add(nt);
+        }
+
+        public void AddTempo(RawTempo tp)
+        {
+            _tempos.Add(tp);
         }
     }
 }

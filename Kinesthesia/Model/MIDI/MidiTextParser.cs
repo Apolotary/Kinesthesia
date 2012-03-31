@@ -42,6 +42,7 @@ namespace Kinesthesia.Model.MIDI
                 if (hasPickedTrack && currTrack == pickedTrack)
                 {
                     RawNote nt;
+                    RawTempo tp;
                     if (stringse.Contains(" Note_on_c"))
                     {
                         nt = new RawNote(Convert.ToInt32(stringse[4]), Convert.ToInt32(stringse[5]), (float)Convert.ToDouble(stringse[1]), true);
@@ -51,6 +52,11 @@ namespace Kinesthesia.Model.MIDI
                     {
                         nt = new RawNote(Convert.ToInt32(stringse[4]), Convert.ToInt32(stringse[5]), (float)Convert.ToDouble(stringse[1]), false);
                         tracklist[currTrack-1].AddNote(nt);
+                    }
+                    else if (stringse.Contains(" Tempo"))
+                    {
+                        tp = new RawTempo((float)Convert.ToDouble(stringse[1]), Convert.ToInt32(stringse[3]));
+                        tracklist[currTrack - 1].AddTempo(tp);
                     }
                     else if (stringse.Contains(" End_track"))
                     {

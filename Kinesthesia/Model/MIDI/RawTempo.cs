@@ -10,10 +10,10 @@ namespace Kinesthesia.Model.MIDI
     /// </summary>
     class RawTempo
     {
-        private int _time;
+        private float _time;
         private int _value;
 
-        public int Time
+        public float Time
         {
             get { return _time; }
             set { _time = value; }
@@ -31,7 +31,7 @@ namespace Kinesthesia.Model.MIDI
             _value = 0;
         }
 
-        public RawTempo(int t, int val)
+        public RawTempo(float t, int val)
         {
             _time = t;
             _value = val;

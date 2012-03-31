@@ -40,7 +40,8 @@
       <HintPath>3rd-party\Coding4Fun.Kinect.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Kinect, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    <Reference Include="Midi">
+    <Reference Include="Midi, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>3rd-party\Midi.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -67,7 +68,9 @@
     <Compile Include="Model\GestureRecognition\GestureEventArgs.cs" />
     <Compile Include="Model\GestureRecognition\GestureRecognizer.cs" />
     <Compile Include="Model\MIDI\MidiPlayer.cs" />
+    <Compile Include="Model\MIDI\RawNoteCallbackMessage.cs" />
     <Compile Include="Model\MIDI\RawTempo.cs" />
+    <Compile Include="Model\MIDI\RawTempoCallbackMessage.cs" />
     <Compile Include="Model\MIDI\Track.cs" />
     <Compile Include="Model\MIDI\MidiTextParser.cs" />
     <Compile Include="Model\MIDI\RawNote.cs" />
@@ -117,6 +120,7 @@
     </None>
     <AppDesigner Include="Properties\" />
     <None Include="SupportingFiles\123.csv" />
+    <None Include="SupportingFiles\456.csv" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="3rd-party\" />

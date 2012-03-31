@@ -17,7 +17,7 @@ namespace Kinesthesia.Model.MIDI
         // usually the default midi-device under 0 is microsoft's wavetable synth
         // ToDO: write configuration method for chosen device
         private OutputDevice _outputDevice = OutputDevice.InstalledDevices[1];
-        private Clock _clock = new Clock(120);
+        private Clock _clock = new Clock(200);
         
         public Clock Clock
         {
@@ -59,6 +59,12 @@ namespace Kinesthesia.Model.MIDI
             _outputDevice.SendNoteOn(Channel.Channel1, pt, velocity);
         }
 
+        public void SendNoteOnMessage(int pitch, int velocity, float time)
+        {
+            NoteOnMessage noteOnMsg = new NoteOnMessage(_outputDevice, Channel.Channel1, ConvertToPitch(pitch), velocity, time);
+            noteOnMsg.SendNow();
+        }
+
         /// <summary>
         /// raw note on message
         /// </summary>
@@ -85,6 +91,12 @@ namespace Kinesthesia.Model.MIDI
             _outputDevice.SendNoteOff(Channel.Channel1, pt, velocity);
         }
 
+        public void SendNoteOffMessage(int pitch, float time)
+        {
+            NoteOffMessage noteOffMessage = new NoteOffMessage(_outputDevice, Channel.Channel1, ConvertToPitch(pitch), 0, time);
+            noteOffMessage.SendNow();
+        }
+
         /// <summary>
         /// raw note off message
         /// </summary>
@@ -94,6 +106,11 @@ namespace Kinesthesia.Model.MIDI
         {
             NoteOffMessage noteOffMessage = new NoteOffMessage(_outputDevice, Channel.Channel1, ConvertToPitch(pitch), 0, time);
             _clock.Schedule(noteOffMessage);
+        }
+
+        public void ScheduleCallbackMessage(Message message)
+        {
+            _clock.Schedule(message);
         }
 
         /// <summary>

@@ -8,25 +8,28 @@ namespace Kinesthesia.Model.MIDI
 {
     class MidiPlayer
     {
-
+        // ToDo: add support for multiple tracks
         private MidiManager midMan = MidiManager.Instance;
         private int overallLength;
+        public List<Track> trList;
 
-        public void PlayMidiFileInTXT(string path)
+        public void ParseMIDIFileInCSV(string path)
         {
-            List<Track> trList =
-                MidiTextParser.RetrieveTracksAndNotesList(path);
+            trList = MidiTextParser.RetrieveTracksAndNotesList(path);
             
             CalculateOverallLength(trList);
 
-            for (int i = 1; i < trList.Count(); ++i)
+            for (int i = 0; i < trList.Count(); ++i)
             {
                 ScheduleTrack(trList[i]);
             }
 
+        }
+
+        public void PlayParsedFile()
+        {
             midMan.Clock.Start();
             Thread.Sleep(50);
-            //midMan.Clock.Stop();
         }
 
         private void ScheduleTrack(Track tr)
@@ -35,13 +38,33 @@ namespace Kinesthesia.Model.MIDI
             {
                 if (rawNote.IsNoteOnType)
                 {
-                    midMan.ScheduleNoteOnMessage(rawNote.Note, rawNote.Velocity, rawNote.Time/1000);
+                    midMan.ScheduleCallbackMessage(new RawNoteCallbackMessage(new RawNoteCallbackMessage.CallbackType(NoteOnCallbackHandler), rawNote.Time/1000, rawNote));
                 }
                 else
                 {
-                    midMan.ScheduleNoteOffMessage(rawNote.Note, rawNote.Time/1000);
+                    midMan.ScheduleCallbackMessage(new RawNoteCallbackMessage(new RawNoteCallbackMessage.CallbackType(NoteOffCallbackHandler), rawNote.Time / 1000, rawNote));
                 }
             }
+
+            foreach (var rawTempo in tr.Tempos)
+            {
+                midMan.ScheduleCallbackMessage(new RawTempoCallbackMessage(new RawTempoCallbackMessage.CallbackType(BPMChangeCallBackHandler), rawTempo.Time, rawTempo));
+            }
+        }
+
+        private void NoteOnCallbackHandler(float time, RawNote note)
+        {
+            midMan.SendNoteOnMessage(note.Note, note.Velocity, time);
+        }
+
+        private void NoteOffCallbackHandler(float time, RawNote note)
+        {
+            midMan.SendNoteOffMessage(note.Note, time);
+        }
+
+        private void BPMChangeCallBackHandler(float time, RawTempo tempo)
+        {
+            midMan.Clock.BeatsPerMinute = CalculateBPM(tempo.Value);
         }
 
         private void CalculateOverallLength(List<Track> trList)
@@ -54,6 +77,11 @@ namespace Kinesthesia.Model.MIDI
                     overallLength = track.OverallLength;
                 }
             }
+        }
+
+        private float CalculateBPM(int tempo)
+        {
+            return 60000000/tempo;
         }
     }
 }
