@@ -38,11 +38,15 @@ namespace Kinesthesia
         Skeleton[] allSkeletons = new Skeleton[skeletonCount];
         private GestureRecognizer leftHandRecognizer;
         private GestureRecognizer rightHandRecognizer;
+        private List<TrackPlayer> trackPlayers;
         private bool shouldTrack = false;
         private string[] notes = {"C", "D", "E", "F", "G", "A", "B"};
         private int currNote = 0;
         private int currOctave = 5;
         private int currVelocity = 80;
+        private TrackPlayer track1;
+        private TrackPlayer track2;
+        private TrackPlayer track3;
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -50,28 +54,28 @@ namespace Kinesthesia
 
             leftHandRecognizer = new GestureRecognizer();
             rightHandRecognizer = new GestureRecognizer();
-            rightHandRecognizer.FramesToCompare = 45;
-            leftHandRecognizer.FramesToCompare = 45;
-            rightHandRecognizer.Threshold = 50;
-            leftHandRecognizer.Threshold = 50;
+            rightHandRecognizer.FramesToCompare = 30;
+            leftHandRecognizer.FramesToCompare = 30;
+            rightHandRecognizer.Threshold = 30;
+            leftHandRecognizer.Threshold = 30;
 
-            leftHandRecognizer.XaxisIncreased += new EventHandler(ChangeVolume);
-            leftHandRecognizer.XaxisDecreased += new EventHandler(ChangeVolume);
-            leftHandRecognizer.YaxisIncreased += new EventHandler(BendPitch);
-            leftHandRecognizer.YaxisDecreased += new EventHandler(BendPitch);
+            leftHandRecognizer.XaxisIncreased += new EventHandler(Empty);
+            leftHandRecognizer.XaxisDecreased += new EventHandler(Empty);
+            leftHandRecognizer.YaxisIncreased += new EventHandler(ChangeVelocity);
+            leftHandRecognizer.YaxisDecreased += new EventHandler(ChangeVelocity);
 
             var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
             Type gestClass = typeof(GestureRecognizer);
             EventInfo xAxisEvent = gestClass.GetEvent("XaxisIncreased", bindingFlags);
 
-            Delegate handler = Delegate.CreateDelegate(xAxisEvent.EventHandlerType, this, "SendNote");
+            Delegate handler = Delegate.CreateDelegate(xAxisEvent.EventHandlerType, this, "Empty");
             xAxisEvent.AddEventHandler(rightHandRecognizer, handler);
 
             //rightHandRecognizer.XaxisIncreased += new EventHandler(SendNote);
-            rightHandRecognizer.XaxisDecreased += new EventHandler(SendNote);
-            rightHandRecognizer.YaxisIncreased += new EventHandler(SendNote);
-            rightHandRecognizer.YaxisDecreased += new EventHandler(SendNote);
+            rightHandRecognizer.XaxisDecreased += new EventHandler(Empty);
+            rightHandRecognizer.YaxisIncreased += new EventHandler(ChangeVelocity);
+            rightHandRecognizer.YaxisDecreased += new EventHandler(ChangeVelocity);
             ParseConfigs();
         }
         
@@ -79,8 +83,47 @@ namespace Kinesthesia
         {
             MidiPlayer midiPl = new MidiPlayer();
 
-            midiPl.PlayMidiFileInTXT(@"C:\diploma\Kinesthesia\Kinesthesia\SupportingFiles\123.csv");
+            List<Track> trList = midiPl.ParseMIDIFileInCSV(@"C:\diploma\Kinesthesia\Kinesthesia\SupportingFiles\456.csv");
+
+            trackPlayers = new List<TrackPlayer>();
+
+            track1 = new TrackPlayer(trList[0]);
+            track2 = new TrackPlayer(trList[2]);
+            track3 = new TrackPlayer(trList[1]);
+
+            midiPl.PlayParsedFile();
             //logBlock.Text = Convert.ToString(trList[2].Notes[5].Note);
+        }
+
+        private void ChangeVelocity(object sender, EventArgs e)
+        {
+            GestureEventArgs ge = (GestureEventArgs)e;
+
+            int velocity = ValueToVelocity(480, ge.point.Y);
+
+            if(ge.joint.JointType == JointType.HandLeft)
+            {
+                track2.Velocity = velocity;
+                logBlock.Text += "\n TRACK " + track2.Track.TrackNumber + " VELOCITY " + velocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+                ScrollTheBox();
+            }
+            else
+            {
+                track3.Velocity = velocity;
+                logBlock.Text += "\n TRACK " + track3.Track.TrackNumber + " VELOCITY " + velocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+                ScrollTheBox();
+            }
+        }
+
+
+        private int ValueToVelocity (int scope, float value)
+        {
+            return Convert.ToInt32(127*value/scope);
+        }
+        
+        private void Empty (object sender, EventArgs e)
+        {
+            
         }
 
         private void SendNote (object sender, EventArgs e)
@@ -209,6 +252,9 @@ namespace Kinesthesia
 
                 Joint left = first.Joints[JointType.HandLeft];
                 Joint right = first.Joints[JointType.HandRight];
+
+                leftHandRecognizer.TrackedJoint = left;
+                rightHandRecognizer.TrackedJoint = right;
 
                 //Map a joint location to a point on the depth map
                 //head

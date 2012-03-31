@@ -74,6 +74,7 @@
     <Compile Include="Model\MIDI\Track.cs" />
     <Compile Include="Model\MIDI\MidiTextParser.cs" />
     <Compile Include="Model\MIDI\RawNote.cs" />
+    <Compile Include="Model\MIDI\TrackPlayer.cs" />
     <Compile Include="UI+Controllers\NoteEventArgs.cs" />
     <Compile Include="UI+Controllers\NoteRectangleControl.xaml.cs">
       <DependentUpon>NoteRectangleControl.xaml</DependentUpon>

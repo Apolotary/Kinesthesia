@@ -16,7 +16,7 @@ namespace Kinesthesia.Model.MIDI
 
         // usually the default midi-device under 0 is microsoft's wavetable synth
         // ToDO: write configuration method for chosen device
-        private OutputDevice _outputDevice = OutputDevice.InstalledDevices[1];
+        private OutputDevice _outputDevice = OutputDevice.InstalledDevices[0];
         private Clock _clock = new Clock(200);
         
         public Clock Clock
