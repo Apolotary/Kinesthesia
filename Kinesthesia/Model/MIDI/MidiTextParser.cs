@@ -15,7 +15,7 @@ namespace Kinesthesia.Model.MIDI
         /// <returns></returns>
         public static List<Track> RetrieveTracksAndNotesList(string path)
         {
-            List<string[]> parsedData = ConfigParser.parseCSV(path);
+            List<string[]> parsedData = CSVParser.parseCSV(path);
 
             int lastTrackNum = Convert.ToInt32(parsedData[parsedData.Count() - 2][0]);
             Track[] tracklist = new Track[lastTrackNum];

@@ -11,32 +11,12 @@ namespace Kinesthesia.Model.ConfigManager
 {
     class ConfigParser
     {
-        public static List<string[]> parseCSV(string path)
+        private List<ConfigContainer> configList;
+
+        public void ParseConfigs(string path)
         {
-            List<string[]> parsedData = new List<string[]>();
-
-            try
-            {
-                using (StreamReader readFile = new StreamReader(path))
-                {
-                    string line;
-                    string[] row;
-
-                    while ((line = readFile.ReadLine()) != null)
-                    {
-                        row = line.Split(',');
-                        parsedData.Add(row);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-            }
-
-            return parsedData;
+            
         }
-
         
     }
 }

@@ -14,8 +14,13 @@
         <Label Content="Label" Height="38" HorizontalAlignment="Left" Margin="1000,178,0,0" Name="label6" VerticalAlignment="Top" Width="52" />
         <Label Content="X" Height="38" HorizontalAlignment="Left" Margin="924,79,0,0" Name="label7" VerticalAlignment="Top" Width="52" />
         <Label Content="Y" Height="38" HorizontalAlignment="Left" Margin="1000,79,0,0" Name="label8" VerticalAlignment="Top" Width="52" />
-        <Button Content="Start" Height="23" HorizontalAlignment="Left" Margin="708,315,0,0" Name="trackButton" VerticalAlignment="Top" Width="75" Click="trackButton_Click" />
+        <Button Content="Start" Height="23" HorizontalAlignment="Left" Margin="708,46,0,0" Name="trackButton" VerticalAlignment="Top" Width="75" Click="trackButton_Click" />
         <TextBox ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" 
          ScrollViewer.VerticalScrollBarVisibility="Auto" Height="227" HorizontalAlignment="Left" Margin="844,253,0,0" Name="logBlock" VerticalAlignment="Top" Width="374" />
+        <Button Content="Play" Height="23" HorizontalAlignment="Left" Margin="708,136,0,0" Name="playButton" VerticalAlignment="Top" Width="75" Click="playButton_Click" />
+        <Label Content="Start Tracking Gestures" Height="28" HorizontalAlignment="Left" Margin="678,12,0,0" Name="label9" VerticalAlignment="Top" Width="144" FontWeight="Bold" />
+        <Label Content="Play parsed MIDI(CSV) file" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="678,89,0,0" Name="label10" VerticalAlignment="Top" Width="164" />
+        <Label Content="Open and parse CSV file" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="678,188,0,0" Name="label11" VerticalAlignment="Top" Width="160" />
+        <Button Content="Open" Height="23" HorizontalAlignment="Left" Margin="708,235,0,0" Name="browseButton" VerticalAlignment="Top" Width="75" Click="browseButton_Click" />
     </Grid>
 </Window>

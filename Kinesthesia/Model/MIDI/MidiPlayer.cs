@@ -14,6 +14,7 @@ namespace Kinesthesia.Model.MIDI
 
         public List<Track> ParseMIDIFileInCSV(string path)
         {
+            midMan.Clock.Reset();
             List<Track> trList = MidiTextParser.RetrieveTracksAndNotesList(path);
             
             CalculateOverallLength(trList);

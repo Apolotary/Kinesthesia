@@ -18,6 +18,7 @@ using Kinesthesia.Model.MIDI;
 using Kinesthesia.Model.GestureRecognition;
 using Coding4Fun.Kinect.Wpf;
 using System.Reflection;
+using Microsoft.Win32;
 using Kinesthesia.Model.ConfigManager;
 
 namespace Kinesthesia
@@ -47,6 +48,8 @@ namespace Kinesthesia
         private TrackPlayer track1;
         private TrackPlayer track2;
         private TrackPlayer track3;
+        private bool isPlaying = false;
+        MidiPlayer midiPl = new MidiPlayer();
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -54,8 +57,8 @@ namespace Kinesthesia
 
             leftHandRecognizer = new GestureRecognizer();
             rightHandRecognizer = new GestureRecognizer();
-            rightHandRecognizer.FramesToCompare = 30;
-            leftHandRecognizer.FramesToCompare = 30;
+            rightHandRecognizer.FramesToCompare = 60;
+            leftHandRecognizer.FramesToCompare = 60;
             rightHandRecognizer.Threshold = 30;
             leftHandRecognizer.Threshold = 30;
 
@@ -76,23 +79,23 @@ namespace Kinesthesia
             rightHandRecognizer.XaxisDecreased += new EventHandler(Empty);
             rightHandRecognizer.YaxisIncreased += new EventHandler(ChangeVelocity);
             rightHandRecognizer.YaxisDecreased += new EventHandler(ChangeVelocity);
-            ParseConfigs();
+            //ParseConfigs();
         }
         
         private void ParseConfigs()
         {
-            MidiPlayer midiPl = new MidiPlayer();
+            //logBlock.Text = Convert.ToString(trList[2].Notes[5].Note);
+        }
 
-            List<Track> trList = midiPl.ParseMIDIFileInCSV(@"C:\diploma\Kinesthesia\Kinesthesia\SupportingFiles\456.csv");
+        private void ParseCSVAtPath(string path)
+        {
+            List<Track> trList = midiPl.ParseMIDIFileInCSV(path);
 
             trackPlayers = new List<TrackPlayer>();
 
             track1 = new TrackPlayer(trList[0]);
             track2 = new TrackPlayer(trList[2]);
             track3 = new TrackPlayer(trList[1]);
-
-            midiPl.PlayParsedFile();
-            //logBlock.Text = Convert.ToString(trList[2].Notes[5].Note);
         }
 
         private void ChangeVelocity(object sender, EventArgs e)
@@ -100,6 +103,7 @@ namespace Kinesthesia
             GestureEventArgs ge = (GestureEventArgs)e;
 
             int velocity = ValueToVelocity(480, ge.point.Y);
+            if (velocity > 127) velocity = 127;
 
             if(ge.joint.JointType == JointType.HandLeft)
             {
@@ -364,6 +368,44 @@ namespace Kinesthesia
         {
             logBlock.SelectionStart = logBlock.Text.Length;
             logBlock.ScrollToEnd();
+        }
+
+        private void playButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isPlaying)
+            {
+                playButton.Content = "Pause";
+                isPlaying = true;
+                midiPl.PlayParsedFile();
+            }
+            else
+            {
+                playButton.Content = "Play";
+                isPlaying = false;
+                midMan.Clock.Stop();
+            }
+        }
+
+        private void browseButton_Click(object sender, RoutedEventArgs e)
+        {
+            string input = string.Empty;
+ 
+            OpenFileDialog dialog = new OpenFileDialog();
+
+            dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+ 
+            dialog.InitialDirectory = "C:"; 
+            dialog.Title = "Select a CSV file";
+
+            dialog.ShowDialog();
+
+            if (dialog.FileName != string.Empty)
+            {
+                logBlock.Text += "OPEN CSV FILE AT: " + dialog.FileName;
+                ScrollTheBox();
+                ParseCSVAtPath(dialog.FileName);
+            }
+              
         }
     }
 }

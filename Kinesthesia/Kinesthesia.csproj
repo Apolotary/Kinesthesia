@@ -65,6 +65,7 @@
     </ApplicationDefinition>
     <Compile Include="Model\ConfigManager\ConfigContainer.cs" />
     <Compile Include="Model\ConfigManager\ConfigParser.cs" />
+    <Compile Include="Model\ConfigManager\CSVParser.cs" />
     <Compile Include="Model\GestureRecognition\GestureEventArgs.cs" />
     <Compile Include="Model\GestureRecognition\GestureRecognizer.cs" />
     <Compile Include="Model\MIDI\MidiPlayer.cs" />
@@ -122,6 +123,7 @@
     <AppDesigner Include="Properties\" />
     <None Include="SupportingFiles\123.csv" />
     <None Include="SupportingFiles\456.csv" />
+    <None Include="SupportingFiles\default.csv" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="3rd-party\" />

@@ -1,0 +1,9 @@
+﻿right_hand, 10, XaxisIncreased, SendNote
+right_hand, 10, XaxisDecreased, SendNote
+right_hand, 10, YaxisIncreased, SendNote
+right_hand, 10, YaxisDecreased, SendNote
+
+left_hand, 10, XaxisIncreased, ChangeVolume
+left_hand, 10, XaxisDecreased, ChangeVolume
+left_hand, 10, YaxisIncreased, BendPitch
+left_hand, 10, YaxisDecreased, BendPitch

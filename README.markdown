@@ -2,9 +2,25 @@
 
 *a simple yet configurable toolkit that works with Kinect and interprets gesture recognition data into MIDI signals*
 
+
+----------
+
 [video demos](http://www.youtube.com/user/apolotary)
 
-**v 0.3** (current version)
+
+----------
+
+## Versions ##
+
+**v 0.4** (current version)
+
+- MIDI-player which supports MIDI-files parsed to CSV (see **Parsing MIDI to CSV part for more info**)
+- Multiple MIDI-tracks control support
+- Velocity change control for each hand (e.g. left hand changes the velocity
+for the piano part played by left hand and so on)
+- File browser and simple CSV-parser
+
+**v 0.3**
 
 - Simplified gesture recognition
 - Additions in MIDI-class
@@ -18,6 +34,25 @@
 
 - Basic MIDI-interaction
 - Some base classes
+
+
+----------
+
+
+## Parsing MIDI to CSV ##
+
+To parse a binary MIDI file to CSV, you'll need [this command line tool](http://www.fourmilab.ch/webtools/midicsv/)
+
+Just copy the MIDI file to the folder with Midicsv.exe and execute command like this:
+
+`MIdicsv.exe rm_theme.mid rm_theme.csv`
+
+where the first item is the converter itself, second is the MIDI-file and third is the desired output name
+
+Then, choose the resulted MIDI-file via Open dialogue. Currently this file should have at least three tracks, otherwise the program woud crash. However you  can change the quantity of tracks within the MainWindow.xaml.cs class
+
+----------
+
 
 for Kinect and WPF-related stuff I use: 
 
