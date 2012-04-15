@@ -41,7 +41,7 @@ namespace Kinesthesia.Model.GestureRecognition
         /// <summary>
         /// tracked joint
         /// </summary>
-        private Joint _trackedJoint;
+        private JointType _trackedJoint;
 
         /// <summary>
         /// Event handlers
@@ -65,7 +65,7 @@ namespace Kinesthesia.Model.GestureRecognition
             get { return _framesToCompare; }
             set { _framesToCompare = value; }
         }
-        public Joint TrackedJoint
+        public JointType TrackedJoint
         {
             get { return _trackedJoint; }
             set { _trackedJoint = value; }
@@ -89,7 +89,7 @@ namespace Kinesthesia.Model.GestureRecognition
         /// default constructor with joint
         /// </summary>
         /// <param name="jointToTrack">default joint</param>
-        public GestureRecognizer(Joint jointToTrack)
+        public GestureRecognizer(JointType jointToTrack)
         {
             _framesToCompare = 20;
             _threshold = 10;
@@ -103,10 +103,10 @@ namespace Kinesthesia.Model.GestureRecognition
         /// <param name="frames">framesToCompare</param>
         /// <param name="thresh">threshold</param>
         /// <param name="jointToTrack">default joint</param>
-        public GestureRecognizer(int frames, double thresh, Joint jointToTrack)
+        public GestureRecognizer(int frames, double threshold, JointType jointToTrack)
         {
             _framesToCompare = frames;
-            _threshold = thresh;
+            _threshold = threshold;
             _trackedJoint = jointToTrack;
             _coordinatesList = new List<SkeletonPoint>();
         }

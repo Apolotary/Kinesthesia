@@ -33,7 +33,7 @@ namespace Kinesthesia.Model.MIDI
             {
                 int currTrack = Convert.ToInt32(stringse[0]);
 
-                if (stringse.Contains(" Start_track"))
+                if (stringse.Contains("Start_track"))
                 {
                     pickedTrack = currTrack;
                     hasPickedTrack = true;
@@ -43,24 +43,28 @@ namespace Kinesthesia.Model.MIDI
                 {
                     RawNote nt;
                     RawTempo tp;
-                    if (stringse.Contains(" Note_on_c"))
+                    if (stringse.Contains("Note_on_c"))
                     {
                         nt = new RawNote(Convert.ToInt32(stringse[4]), Convert.ToInt32(stringse[5]), (float)Convert.ToDouble(stringse[1]), true);
                         tracklist[currTrack-1].AddNote(nt);
                     }
-                    else if (stringse.Contains(" Note_off_c"))
+                    else if (stringse.Contains("Note_off_c"))
                     {
                         nt = new RawNote(Convert.ToInt32(stringse[4]), Convert.ToInt32(stringse[5]), (float)Convert.ToDouble(stringse[1]), false);
                         tracklist[currTrack-1].AddNote(nt);
                     }
-                    else if (stringse.Contains(" Tempo"))
+                    else if (stringse.Contains("Tempo"))
                     {
                         tp = new RawTempo((float)Convert.ToDouble(stringse[1]), Convert.ToInt32(stringse[3]));
                         tracklist[currTrack - 1].AddTempo(tp);
                     }
-                    else if (stringse.Contains(" End_track"))
+                    else if (stringse.Contains("End_track"))
                     {
                         tracklist[currTrack - 1].OverallLength = Convert.ToInt32(stringse[1]);
+                    }
+                    else if (stringse.Contains("Title_t"))
+                    {
+                        tracklist[currTrack - 1].TrackName = stringse[3];
                     }
                 }
             }

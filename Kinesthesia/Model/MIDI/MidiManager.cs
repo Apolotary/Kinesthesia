@@ -9,14 +9,21 @@ namespace Kinesthesia.Model.MIDI
     /// <summary>
     /// this class is managing the note sending from 
     /// interpreter class to MIDI-device
+    /// It's implemented as singletone
     /// </summary>
     class MidiManager
     {
         private static MidiManager instance;
 
-        // usually the default midi-device under 0 is microsoft's wavetable synth
         // ToDO: write configuration method for chosen device
+        /// <summary>
+        /// usually the default midi-device under 0 is microsoft's wavetable synth
+        /// </summary>
         private OutputDevice _outputDevice = OutputDevice.InstalledDevices[1];
+        
+        /// <summary>
+        /// 
+        /// </summary>
         private Clock _clock = new Clock(200);
         
         public Clock Clock
@@ -33,6 +40,9 @@ namespace Kinesthesia.Model.MIDI
             _outputDevice.Open();
         }
 
+        /// <summary>
+        /// returning an instance of MidiManager
+        /// </summary>
         public static MidiManager Instance
         {
             get
@@ -59,6 +69,12 @@ namespace Kinesthesia.Model.MIDI
             _outputDevice.SendNoteOn(Channel.Channel1, pt, velocity);
         }
 
+        /// <summary>
+        /// send raw note on message
+        /// </summary>
+        /// <param name="pitch"></param>
+        /// <param name="velocity"></param>
+        /// <param name="time"></param>
         public void SendNoteOnMessage(int pitch, int velocity, float time)
         {
             NoteOnMessage noteOnMsg = new NoteOnMessage(_outputDevice, Channel.Channel1, ConvertToPitch(pitch), velocity, time);
@@ -66,7 +82,7 @@ namespace Kinesthesia.Model.MIDI
         }
 
         /// <summary>
-        /// raw note on message
+        /// schedule raw note on message
         /// </summary>
         /// <param name="pitch"></param>
         /// <param name="velocity"></param>
@@ -91,6 +107,11 @@ namespace Kinesthesia.Model.MIDI
             _outputDevice.SendNoteOff(Channel.Channel1, pt, velocity);
         }
 
+        /// <summary>
+        /// send raw note off message
+        /// </summary>
+        /// <param name="pitch"></param>
+        /// <param name="time"></param>
         public void SendNoteOffMessage(int pitch, float time)
         {
             NoteOffMessage noteOffMessage = new NoteOffMessage(_outputDevice, Channel.Channel1, ConvertToPitch(pitch), 0, time);
@@ -98,7 +119,7 @@ namespace Kinesthesia.Model.MIDI
         }
 
         /// <summary>
-        /// raw note off message
+        /// schedule raw note off message
         /// </summary>
         /// <param name="pitch"></param>
         /// <param name="time"></param>
@@ -108,6 +129,10 @@ namespace Kinesthesia.Model.MIDI
             _clock.Schedule(noteOffMessage);
         }
 
+        /// <summary>
+        /// schedule any callback message 
+        /// </summary>
+        /// <param name="message">message which inherits from the Message class</param>
         public void ScheduleCallbackMessage(Message message)
         {
             _clock.Schedule(message);
@@ -146,6 +171,12 @@ namespace Kinesthesia.Model.MIDI
             return NumToEnum<Pitch>(noteToConvert);
         }
 
+        /// <summary>
+        /// Retrieving parameter from enum structure by number
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="number"></param>
+        /// <returns></returns>
         public T NumToEnum<T>(int number)
         {
             return (T)Enum.ToObject(typeof(T), number);

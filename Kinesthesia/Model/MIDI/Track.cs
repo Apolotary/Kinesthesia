@@ -14,6 +14,7 @@ namespace Kinesthesia.Model.MIDI
         private List<RawTempo> _tempos;
         private int _trackNumber;
         private int _overallLength;
+        private string _trackName;
 
         public List<RawNote> Notes
         {
@@ -35,19 +36,26 @@ namespace Kinesthesia.Model.MIDI
             get { return _overallLength; }
             set { _overallLength = value; }
         }
+        public string TrackName
+        {
+            get { return _trackName; }
+            set { _trackName = value; }
+        }
 
         public Track()
         {
             _notes = new List<RawNote>();
             _tempos = new List<RawTempo>();
+            _trackName = " \"No Title\"";
             _trackNumber = 0;
         }
 
-        public Track(List<RawNote> ns, List<RawTempo> tps, int cn)
+        public Track(List<RawNote> ns, List<RawTempo> tps, int cn, string name)
         {
             _notes = ns;
             _tempos = tps;
             _trackNumber = cn;
+            _trackName = name;
         }
 
         public void AddNote(RawNote nt)

@@ -6,38 +6,37 @@ using System.Threading;
 
 namespace Kinesthesia.Model.MIDI
 {
+    /// <summary>
+    /// class that plays MIDI files
+    /// </summary>
     class MidiPlayer
     {
-        // ToDo: add support for multiple tracks
+        /// <summary>
+        /// midi manager instance
+        /// </summary>
         private MidiManager midMan = MidiManager.Instance;
-        private int overallLength;
-
+        
+        /// <summary>
+        /// retrieve and parse MIDI CSV file at the following path
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public List<Track> ParseMIDIFileInCSV(string path)
         {
             midMan.Clock.Reset();
             List<Track> trList = MidiTextParser.RetrieveTracksAndNotesList(path);
             
-            CalculateOverallLength(trList);
-
             return trList;
         }
 
+        /// <summary>
+        /// play scheduled file
+        /// </summary>
         public void PlayParsedFile()
         {
             midMan.Clock.Start();
             Thread.Sleep(50);
         }
 
-        private void CalculateOverallLength(List<Track> trList)
-        {
-            overallLength = 0;
-            foreach (var track in trList)
-            {
-                if (track.OverallLength > overallLength)
-                {
-                    overallLength = track.OverallLength;
-                }
-            }
-        }
     }
 }

@@ -9,6 +9,9 @@ using System.Windows;
 
 namespace Kinesthesia.Model.ConfigManager
 {
+    /// <summary>
+    /// All-purpose CSV parsing class. It's simple and may fail with more complicated files.
+    /// </summary>
     class CSVParser
     {
         public static List<string[]> parseCSV(string path)
@@ -24,6 +27,7 @@ namespace Kinesthesia.Model.ConfigManager
 
                     while ((line = readFile.ReadLine()) != null)
                     {
+                        line = line.Replace(" ", "");
                         row = line.Split(',');
                         parsedData.Add(row);
                     }

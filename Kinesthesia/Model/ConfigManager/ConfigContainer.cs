@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Kinect;
 
 namespace Kinesthesia.Model.ConfigManager
 {
+    /// <summary>
+    /// Container for the current configuration
+    /// </summary>
     class ConfigContainer
     {
         /// <summary>
         /// name of the joint which triggers the event
         /// </summary>
-        private string _jointName;
+        private JointType _jointType;
 
         /// <summary>
         /// threshold value to trigger
@@ -30,10 +34,10 @@ namespace Kinesthesia.Model.ConfigManager
         /// <summary>
         /// properties
         /// </summary>
-        public string JointName
+        public JointType JointType
         {
-            get { return _jointName; }
-            set { _jointName = value; }
+            get { return _jointType; }
+            set { _jointType = value; }
         }
         public int Threshold
         {
@@ -56,7 +60,7 @@ namespace Kinesthesia.Model.ConfigManager
         /// </summary>
         public ConfigContainer()
         {
-            _jointName = "";
+            _jointType = JointType.Head;
             _threshold = 10;
             _eventName = "";
             _methodName = "";
@@ -65,16 +69,16 @@ namespace Kinesthesia.Model.ConfigManager
         /// <summary>
         /// constructor with params
         /// </summary>
-        /// <param name="j">name of the joint which triggers the event</param>
-        /// <param name="t">threshold value to trigger</param>
-        /// <param name="e">event name which triggers the method</param>
-        /// <param name="m">method name that will be triggered</param>
-        public ConfigContainer(string j, int t, string e, string m)
+        /// <param name="joint">type of the joint which triggers the event</param>
+        /// <param name="threshold">threshold value to trigger</param>
+        /// <param name="eventName">event name which triggers the method</param>
+        /// <param name="methodName">method name that will be triggered</param>
+        public ConfigContainer(JointType joint, int threshold, string eventName, string methodName)
         {
-            _jointName = j;
-            _threshold = t;
-            _eventName = e;
-            _methodName = m;
+            _jointType = joint;
+            _threshold = threshold;
+            _eventName = eventName;
+            _methodName = methodName;
         }
     }
 }

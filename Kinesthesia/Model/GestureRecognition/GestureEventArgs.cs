@@ -7,15 +7,18 @@ using Microsoft.Kinect;
 
 namespace Kinesthesia.Model.GestureRecognition
 {
+    /// <summary>
+    /// Event arguments to pass for gesture recognition event callbacks
+    /// </summary>
     class GestureEventArgs: EventArgs
     {
-        public GestureEventArgs (Joint j, SkeletonPoint p)
+        public GestureEventArgs(JointType jointToTrack, SkeletonPoint pointToSend)
         {
-            joint = j;
-            point = p;
+            joint = jointToTrack;
+            point = pointToSend;
         }
 
-        public Joint joint;
+        public JointType joint;
         public SkeletonPoint point;
     }
 }

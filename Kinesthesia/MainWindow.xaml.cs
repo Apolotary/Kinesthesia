@@ -37,14 +37,44 @@ namespace Kinesthesia
         const int skeletonCount = 6;
         MidiManager midMan = MidiManager.Instance;
         Skeleton[] allSkeletons = new Skeleton[skeletonCount];
+
+        private List<ConfigContainer> configurationList;
+
+        /// <summary>
+        /// gesture recognizers
+        /// </summary>
         private GestureRecognizer leftHandRecognizer;
         private GestureRecognizer rightHandRecognizer;
+
+        /// <summary>
+        /// events for gestures
+        /// </summary>
+        private EventInfo xAxisIncreasedEvent;
+        private EventInfo xAxisDecreasedEvent;
+        private EventInfo yAxisIncreasedEvent;
+        private EventInfo yAxisDecreasedEvent;
+
+        /// <summary>
+        /// delegates for gestures
+        /// </summary>
+        private Delegate rightHandXAxisIncreasedEventHandler;
+        private Delegate rightHandXAxisDecreasedEventHandler;
+        private Delegate rightHandYAxisIncreasedEventHandler;
+        private Delegate rightHandYAxisDecreasedEventHandler;
+        private Delegate leftHandXAxisIncreasedEventHandler;
+        private Delegate leftHandXAxisDecreasedEventHandler;
+        private Delegate leftHandYAxisIncreasedEventHandler;
+        private Delegate leftHandYAxisDecreasedEventHandler;
+
         private List<TrackPlayer> trackPlayers;
         private bool shouldTrack = false;
+
         private string[] notes = {"C", "D", "E", "F", "G", "A", "B"};
         private int currNote = 0;
         private int currOctave = 5;
         private int currVelocity = 80;
+
+        private List<Track> trackList;
         private TrackPlayer track1;
         private TrackPlayer track2;
         private TrackPlayer track3;
@@ -54,48 +84,146 @@ namespace Kinesthesia
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
+            CreateAndInitializeDefaultGestureRecognizers();
+        }
 
-            leftHandRecognizer = new GestureRecognizer();
-            rightHandRecognizer = new GestureRecognizer();
-            rightHandRecognizer.FramesToCompare = 60;
-            leftHandRecognizer.FramesToCompare = 60;
-            rightHandRecognizer.Threshold = 30;
-            leftHandRecognizer.Threshold = 30;
-
-            leftHandRecognizer.XaxisIncreased += new EventHandler(Empty);
-            leftHandRecognizer.XaxisDecreased += new EventHandler(Empty);
-            leftHandRecognizer.YaxisIncreased += new EventHandler(ChangeVelocity);
-            leftHandRecognizer.YaxisDecreased += new EventHandler(ChangeVelocity);
-
+        private void CreateAndInitializeDefaultGestureRecognizers()
+        {
+            leftHandRecognizer = new GestureRecognizer(60, 30, JointType.HandLeft);
+            rightHandRecognizer = new GestureRecognizer(60, 30, JointType.HandRight);
+            
+            // binding events 
             var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
             Type gestClass = typeof(GestureRecognizer);
-            EventInfo xAxisEvent = gestClass.GetEvent("XaxisIncreased", bindingFlags);
+            xAxisIncreasedEvent = gestClass.GetEvent("XaxisIncreased", bindingFlags);
+            xAxisDecreasedEvent = gestClass.GetEvent("XaxisDecreased", bindingFlags);
+            yAxisIncreasedEvent = gestClass.GetEvent("YaxisIncreased", bindingFlags);
+            yAxisDecreasedEvent = gestClass.GetEvent("YaxisDecreased", bindingFlags);
 
-            Delegate handler = Delegate.CreateDelegate(xAxisEvent.EventHandlerType, this, "Empty");
-            xAxisEvent.AddEventHandler(rightHandRecognizer, handler);
+            // initializing right hand recognizer
+            rightHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, "DoNothing");
+            rightHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, "DoNothing");
+            rightHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, "ChangeVelocity");
+            rightHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, "ChangeVelocity");
+            
+            // initializing left hand recognizer
+            leftHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, "DoNothing");
+            leftHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, "DoNothing");
+            leftHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, "ChangeVelocity");
+            leftHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, "ChangeVelocity");
 
-            //rightHandRecognizer.XaxisIncreased += new EventHandler(SendNote);
-            rightHandRecognizer.XaxisDecreased += new EventHandler(Empty);
-            rightHandRecognizer.YaxisIncreased += new EventHandler(ChangeVelocity);
-            rightHandRecognizer.YaxisDecreased += new EventHandler(ChangeVelocity);
-            //ParseConfigs();
+            AddAllEventHandlers();
         }
         
-        private void ParseConfigs()
+        private void ParseConfigs(string path)
         {
-            //logBlock.Text = Convert.ToString(trList[2].Notes[5].Note);
+            ConfigParser configParser = new ConfigParser();
+            configurationList = configParser.ParseConfigs(path);
+            
+            ClearAllEventHandlers();
+
+            settingsLog.Text += "\n" + "Joint" + " " + "Threshold" + " " + "Event" + " " + "Method" + "\n \n";
+            
+            foreach (var configContainer in configurationList)
+            {
+                settingsLog.Text += Convert.ToString(configContainer.JointType) + " " + configContainer.Threshold + " " +
+                                    configContainer.EventName + " " + configContainer.MethodName + "\n";
+                ScrollTheBox();
+
+                if (configContainer.JointType == JointType.HandLeft)
+                {
+                    leftHandRecognizer.Threshold = configContainer.Threshold;
+                    
+                    if (configContainer.EventName == "XaxisIncreased")
+                    {
+                        leftHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                    }
+                    else if(configContainer.EventName == "XaxisDecreased")
+                    {
+                        leftHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                    }
+                    else if (configContainer.EventName == "YaxisIncreased")
+                    {
+                        leftHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                    }
+                    else if (configContainer.EventName == "YaxisDecreased")
+                    {
+                        leftHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                    }
+                }
+                else if (configContainer.JointType == JointType.HandRight)
+                {
+                    rightHandRecognizer.Threshold = configContainer.Threshold;
+
+                    if (configContainer.EventName == "XaxisIncreased")
+                    {
+                        rightHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                    }
+                    else if (configContainer.EventName == "XaxisDecreased")
+                    {
+                        rightHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                    }
+                    else if (configContainer.EventName == "YaxisIncreased")
+                    {
+                        rightHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                    }
+                    else if (configContainer.EventName == "YaxisDecreased")
+                    {
+                        rightHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                    }
+                }
+            }
+
+            AddAllEventHandlers();
+        }
+
+        private void ClearAllEventHandlers()
+        {
+            xAxisIncreasedEvent.RemoveEventHandler(rightHandRecognizer, rightHandXAxisIncreasedEventHandler);
+            xAxisDecreasedEvent.RemoveEventHandler(rightHandRecognizer, rightHandXAxisDecreasedEventHandler);
+            yAxisIncreasedEvent.RemoveEventHandler(rightHandRecognizer, rightHandYAxisIncreasedEventHandler);
+            yAxisDecreasedEvent.RemoveEventHandler(rightHandRecognizer, rightHandYAxisDecreasedEventHandler);
+
+            xAxisIncreasedEvent.RemoveEventHandler(leftHandRecognizer, leftHandXAxisIncreasedEventHandler);
+            xAxisDecreasedEvent.RemoveEventHandler(leftHandRecognizer, leftHandXAxisDecreasedEventHandler);
+            yAxisIncreasedEvent.RemoveEventHandler(leftHandRecognizer, leftHandYAxisIncreasedEventHandler);
+            yAxisDecreasedEvent.RemoveEventHandler(leftHandRecognizer, leftHandYAxisDecreasedEventHandler);
+        }
+
+        private void AddAllEventHandlers()
+        {
+            xAxisIncreasedEvent.AddEventHandler(rightHandRecognizer, rightHandXAxisIncreasedEventHandler);
+            xAxisDecreasedEvent.AddEventHandler(rightHandRecognizer, rightHandXAxisDecreasedEventHandler);
+            yAxisIncreasedEvent.AddEventHandler(rightHandRecognizer, rightHandYAxisIncreasedEventHandler);
+            yAxisDecreasedEvent.AddEventHandler(rightHandRecognizer, rightHandYAxisDecreasedEventHandler);
+
+            xAxisIncreasedEvent.AddEventHandler(leftHandRecognizer, leftHandXAxisIncreasedEventHandler);
+            xAxisDecreasedEvent.AddEventHandler(leftHandRecognizer, leftHandXAxisDecreasedEventHandler);
+            yAxisIncreasedEvent.AddEventHandler(leftHandRecognizer, leftHandYAxisIncreasedEventHandler);
+            yAxisDecreasedEvent.AddEventHandler(leftHandRecognizer, leftHandYAxisDecreasedEventHandler);
         }
 
         private void ParseCSVAtPath(string path)
         {
-            List<Track> trList = midiPl.ParseMIDIFileInCSV(path);
+            trackList = midiPl.ParseMIDIFileInCSV(path);
+
+            PrintTrackListToSettingsLog();
 
             trackPlayers = new List<TrackPlayer>();
 
-            track1 = new TrackPlayer(trList[0]);
-            track2 = new TrackPlayer(trList[2]);
-            track3 = new TrackPlayer(trList[1]);
+            track1 = new TrackPlayer(trackList[0]);
+            track2 = new TrackPlayer(trackList[2]);
+            track3 = new TrackPlayer(trackList[1]);
+        }
+
+        private void PrintTrackListToSettingsLog()
+        {
+            settingsLog.Text = "MIDI Track Properties: \n \n";
+            foreach (var track in trackList)
+            {
+                settingsLog.Text += track.TrackNumber + " " + track.TrackName + "\n";
+            }
         }
 
         private void ChangeVelocity(object sender, EventArgs e)
@@ -105,16 +233,16 @@ namespace Kinesthesia
             int velocity = ValueToVelocity(480, ge.point.Y);
             if (velocity > 127) velocity = 127;
 
-            if(ge.joint.JointType == JointType.HandLeft)
+            if(ge.joint == JointType.HandLeft)
             {
                 track2.Velocity = velocity;
-                logBlock.Text += "\n TRACK " + track2.Track.TrackNumber + " VELOCITY " + velocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+                logBlock.Text += "\nTRACK " + track2.Track.TrackNumber + " VELOCITY " + velocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
                 ScrollTheBox();
             }
             else
             {
                 track3.Velocity = velocity;
-                logBlock.Text += "\n TRACK " + track3.Track.TrackNumber + " VELOCITY " + velocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+                logBlock.Text += "\nTRACK " + track3.Track.TrackNumber + " VELOCITY " + velocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
                 ScrollTheBox();
             }
         }
@@ -125,7 +253,7 @@ namespace Kinesthesia
             return Convert.ToInt32(127*value/scope);
         }
         
-        private void Empty (object sender, EventArgs e)
+        private void DoNothing (object sender, EventArgs e)
         {
             
         }
@@ -150,7 +278,7 @@ namespace Kinesthesia
 
             midMan.SendNoteOnMessage(notes[currNote], currOctave, currVelocity);
 
-            logBlock.Text += "\n NOTE " + notes[currNote] + " OF OCTAVE " + currOctave + " VELOCITY " + currVelocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            logBlock.Text += "\nNOTE " + notes[currNote] + " OF OCTAVE " + currOctave + " VELOCITY " + currVelocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
             ScrollTheBox();
         }
 
@@ -161,7 +289,7 @@ namespace Kinesthesia
             int pitchPart = 16384/480;
             midMan.SendPitchBend(pitchPart*(int)ge.point.Y);
 
-            logBlock.Text += "\n PITCH BEND " + pitchPart * (int)ge.point.Y + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            logBlock.Text += "\nPITCH BEND " + pitchPart * (int)ge.point.Y + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
             ScrollTheBox();
         }
 
@@ -173,7 +301,7 @@ namespace Kinesthesia
             int vol = (int)ge.point.X/volumePart;
             
 
-            logBlock.Text += "\n CHANGE VOLUME " + vol + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            logBlock.Text += "\nCHANGE VOLUME " + vol + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
             ScrollTheBox();
         }
 
@@ -256,9 +384,6 @@ namespace Kinesthesia
 
                 Joint left = first.Joints[JointType.HandLeft];
                 Joint right = first.Joints[JointType.HandRight];
-
-                leftHandRecognizer.TrackedJoint = left;
-                rightHandRecognizer.TrackedJoint = right;
 
                 //Map a joint location to a point on the depth map
                 //head
@@ -350,7 +475,7 @@ namespace Kinesthesia
             {
                 trackButton.Content = "Stop";
                 shouldTrack = true;
-                logBlock.Text = "Start Tracking";
+                logBlock.Text += "\nStart Tracking";
                 ScrollTheBox();
             }
             else
@@ -359,7 +484,7 @@ namespace Kinesthesia
                 midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
                 trackButton.Content = "Start";
                 shouldTrack = false;
-                logBlock.Text += "\n Stop Tracking";
+                logBlock.Text += "\nStop Tracking";
                 ScrollTheBox();
             }
         }
@@ -368,6 +493,9 @@ namespace Kinesthesia
         {
             logBlock.SelectionStart = logBlock.Text.Length;
             logBlock.ScrollToEnd();
+
+            settingsLog.SelectionStart = settingsLog.Text.Length;
+            settingsLog.ScrollToEnd();
         }
 
         private void playButton_Click(object sender, RoutedEventArgs e)
@@ -406,6 +534,27 @@ namespace Kinesthesia
                 ParseCSVAtPath(dialog.FileName);
             }
               
+        }
+
+        private void settingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            string input = string.Empty;
+
+            OpenFileDialog dialog = new OpenFileDialog();
+
+            dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+
+            dialog.InitialDirectory = "C:";
+            dialog.Title = "Select a CSV file";
+
+            dialog.ShowDialog();
+
+            if (dialog.FileName != string.Empty)
+            {
+                logBlock.Text += "OPEN CONFIG FILE AT: " + dialog.FileName;
+                ScrollTheBox();
+                ParseConfigs(dialog.FileName);
+            }
         }
     }
 }
