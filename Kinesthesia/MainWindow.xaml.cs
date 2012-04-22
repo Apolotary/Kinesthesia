@@ -20,6 +20,7 @@ using Coding4Fun.Kinect.Wpf;
 using System.Reflection;
 using Microsoft.Win32;
 using Kinesthesia.Model.ConfigManager;
+using Kinect.Toolbox;
 
 namespace Kinesthesia
 {
@@ -45,6 +46,7 @@ namespace Kinesthesia
         /// </summary>
         private GestureRecognizer leftHandRecognizer;
         private GestureRecognizer rightHandRecognizer;
+        private SwipeGestureDetector swipeDetector;
 
         /// <summary>
         /// events for gestures
@@ -81,6 +83,9 @@ namespace Kinesthesia
         private bool isPlaying = false;
         MidiPlayer midiPl = new MidiPlayer();
 
+        private KinectSensor sensor;
+        private Point lastPoint;
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
@@ -101,21 +106,33 @@ namespace Kinesthesia
             yAxisIncreasedEvent = gestClass.GetEvent("YaxisIncreased", bindingFlags);
             yAxisDecreasedEvent = gestClass.GetEvent("YaxisDecreased", bindingFlags);
 
-            // initializing right hand recognizer
-            rightHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, "DoNothing");
-            rightHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, "DoNothing");
-            rightHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, "ChangeVelocity");
-            rightHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, "ChangeVelocity");
+            //// initializing right hand recognizer
+            //rightHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, "DoNothing");
+            //rightHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, "DoNothing");
+            //rightHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, "ChangeVelocity");
+            //rightHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, "ChangeVelocity");
             
-            // initializing left hand recognizer
-            leftHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, "DoNothing");
-            leftHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, "DoNothing");
-            leftHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, "ChangeVelocity");
-            leftHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, "ChangeVelocity");
+            //// initializing left hand recognizer
+            //leftHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, "DoNothing");
+            //leftHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, "DoNothing");
+            //leftHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, "ChangeVelocity");
+            //leftHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, "ChangeVelocity");
+
+            ParseConfigs(@"c:\diploma\Kinesthesia\Kinesthesia\SupportingFiles\default.csv");
+
+            swipeDetector = new SwipeGestureDetector();
+            swipeDetector.OnGestureDetected += OnGestureDetected;
 
             AddAllEventHandlers();
         }
         
+        void OnGestureDetected(string gesture, Point p)
+        {
+            logBlock.Text += "\n" + gesture  +
+                             " X: " + lastPoint.X + " Y: " + lastPoint.Y;
+            ScrollTheBox();
+        }
+
         private void ParseConfigs(string path)
         {
             ConfigParser configParser = new ConfigParser();
@@ -312,7 +329,7 @@ namespace Kinesthesia
 
             StopKinect(old);
 
-            KinectSensor sensor = (KinectSensor)e.NewValue;
+            sensor = (KinectSensor)e.NewValue;
 
             if (sensor == null)
             {
@@ -433,8 +450,10 @@ namespace Kinesthesia
                     rpoint.Y = (float)rightPoint.Y;
                     rpoint.Z = 0;
 
-                    leftHandRecognizer.AddCoordinate(lpoint);
-                    rightHandRecognizer.AddCoordinate(rpoint);
+                    //leftHandRecognizer.AddCoordinate(lpoint);
+                    //rightHandRecognizer.AddCoordinate(rpoint);
+                    lastPoint = rightPoint;
+                    swipeDetector.Add(right.Position, sensor);
 
                     //logBlock.Text += "\n NEW POINT " + leftHandRecognizer.currPointNumber() + " X: " + point.X + " Y: " + point.Y;
                 }
@@ -521,8 +540,8 @@ namespace Kinesthesia
             OpenFileDialog dialog = new OpenFileDialog();
 
             dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
- 
-            dialog.InitialDirectory = "C:"; 
+
+            dialog.InitialDirectory = Environment.CurrentDirectory; 
             dialog.Title = "Select a CSV file";
 
             dialog.ShowDialog();
@@ -544,7 +563,7 @@ namespace Kinesthesia
 
             dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
 
-            dialog.InitialDirectory = "C:";
+            dialog.InitialDirectory = Environment.CurrentDirectory;
             dialog.Title = "Select a CSV file";
 
             dialog.ShowDialog();
