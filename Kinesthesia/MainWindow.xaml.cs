@@ -158,6 +158,20 @@ namespace Kinesthesia
                         rightHandSwipeDetector.SwipeMaximalHeight = configContainer.SwipeMaximalHeight;
                         rightHandSwipeDetector.SwipeMinimalDuration = configContainer.SwipeMinimalDuration;
                         rightHandSwipeDetector.SwipeMaximalDuration = configContainer.SwipeMaximalDuration;
+
+                        rHandMinLengthSlider.Value = configContainer.SwipeMinimalLength;
+                        rHandMaxLengthSlider.Value = configContainer.SwipeMaximalLength;
+                        rHandMinHeightSlider.Value = configContainer.SwipeMinimalHeight;
+                        rHandMaxHeightSlider.Value = configContainer.SwipeMaximalHeight;
+                        rHandMinDurationSlider.Value = configContainer.SwipeMinimalDuration;
+                        rHandMaxDurationSlider.Value = configContainer.SwipeMaximalDuration;
+
+                        rHandMinLengthSliderBox.Content = configContainer.SwipeMinimalLength;
+                        rHandMaxLengthSliderBox.Content = configContainer.SwipeMaximalLength;
+                        rHandMinHeightSliderBox.Content = configContainer.SwipeMinimalHeight;
+                        rHandMaxHeightSliderBox.Content = configContainer.SwipeMaximalHeight;
+                        rHandMinDurationSliderBox.Content = configContainer.SwipeMinimalDuration;
+                        rHandMaxDurationSliderBox.Content = configContainer.SwipeMaximalDuration;
                     }
                     else if (configContainer.JointType == JointType.HandLeft)
                     {
@@ -167,6 +181,20 @@ namespace Kinesthesia
                         leftHandSwipeDetector.SwipeMaximalHeight = configContainer.SwipeMaximalHeight;
                         leftHandSwipeDetector.SwipeMinimalDuration = configContainer.SwipeMinimalDuration;
                         leftHandSwipeDetector.SwipeMaximalDuration = configContainer.SwipeMaximalDuration;
+
+                        lHandMinLengthSlider.Value = configContainer.SwipeMinimalLength;
+                        lHandMaxLengthSlider.Value = configContainer.SwipeMaximalLength;
+                        lHandMinHeightSlider.Value = configContainer.SwipeMinimalHeight;
+                        lHandMaxHeightSlider.Value = configContainer.SwipeMaximalHeight;
+                        lHandMinDurationSlider.Value = configContainer.SwipeMinimalDuration;
+                        lHandMaxDurationSlider.Value = configContainer.SwipeMaximalDuration;
+
+                        lHandMinLengthSliderBox.Content = configContainer.SwipeMinimalLength;
+                        lHandMaxLengthSliderBox.Content = configContainer.SwipeMaximalLength;
+                        lHandMinHeightSliderBox.Content = configContainer.SwipeMinimalHeight;
+                        lHandMaxHeightSliderBox.Content = configContainer.SwipeMaximalHeight;
+                        lHandMinDurationSliderBox.Content = configContainer.SwipeMinimalDuration;
+                        lHandMaxDurationSliderBox.Content = configContainer.SwipeMaximalDuration;
                     }
                 }
                 else if (configContainer.ConfigType == "Event")
@@ -442,6 +470,20 @@ namespace Kinesthesia
         {
             if (!shouldTrack)
             {
+                lHandMinLengthSlider.IsEnabled = false;
+                lHandMaxLengthSlider.IsEnabled = false;
+                lHandMinHeightSlider.IsEnabled = false;
+                lHandMaxHeightSlider.IsEnabled = false;
+                lHandMinDurationSlider.IsEnabled = false;
+                lHandMaxDurationSlider.IsEnabled = false;
+
+                rHandMinLengthSlider.IsEnabled = false;
+                rHandMaxLengthSlider.IsEnabled = false;
+                rHandMinHeightSlider.IsEnabled = false;
+                rHandMaxHeightSlider.IsEnabled = false;
+                rHandMinDurationSlider.IsEnabled = false;
+                rHandMaxDurationSlider.IsEnabled = false;
+
                 trackButton.Content = "Stop";
                 shouldTrack = true;
                 logBlock.Text += "\nStart Tracking";
@@ -449,6 +491,21 @@ namespace Kinesthesia
             }
             else
             {
+                lHandMinLengthSlider.IsEnabled = true;
+                lHandMaxLengthSlider.IsEnabled = true;
+                lHandMinHeightSlider.IsEnabled = true;
+                lHandMaxHeightSlider.IsEnabled = true;
+                lHandMinDurationSlider.IsEnabled = true;
+                lHandMaxDurationSlider.IsEnabled = true;
+
+                rHandMinLengthSlider.IsEnabled = true;
+                rHandMaxLengthSlider.IsEnabled = true;
+                rHandMinHeightSlider.IsEnabled = true;
+                rHandMaxHeightSlider.IsEnabled = true;
+                rHandMinDurationSlider.IsEnabled = true;
+                rHandMaxDurationSlider.IsEnabled = true;
+
+
                 midMan.SendPitchBend(8192);
                 midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
                 trackButton.Content = "Start";
@@ -524,6 +581,78 @@ namespace Kinesthesia
                 ScrollTheBox();
                 ParseConfigs(dialog.FileName);
             }
+        }
+
+        private void lHandMinLengthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            leftHandSwipeDetector.SwipeMinimalLength = e.NewValue;
+            lHandMinLengthSliderBox.Content = string.Format("{0:0.00}", e.NewValue);
+        }
+
+        private void lHandMaxLengthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            leftHandSwipeDetector.SwipeMaximalLength = e.NewValue;
+            lHandMaxLengthSliderBox.Content = string.Format("{0:0.00}", e.NewValue);
+        }
+
+        private void lHandMinHeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            leftHandSwipeDetector.SwipeMinimalHeight = e.NewValue;
+            lHandMinHeightSliderBox.Content = string.Format("{0:0.00}", e.NewValue);
+        }
+
+        private void lHandMaxHeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            leftHandSwipeDetector.SwipeMaximalHeight = e.NewValue;
+            lHandMaxHeightSliderBox.Content = string.Format("{0:0.00}", e.NewValue);
+        }
+
+        private void lHandMinDurationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            leftHandSwipeDetector.SwipeMinimalDuration = Convert.ToInt32(e.NewValue);
+            lHandMinDurationSliderBox.Content = Convert.ToInt32(e.NewValue);
+        }
+
+        private void lHandMaxDurationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            leftHandSwipeDetector.SwipeMaximalDuration = Convert.ToInt32(e.NewValue);
+            lHandMaxDurationSliderBox.Content = Convert.ToInt32(e.NewValue);
+        }
+
+        private void rHandMinLengthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            rightHandSwipeDetector.SwipeMinimalLength = e.NewValue;
+            rHandMinLengthSliderBox.Content = string.Format("{0:0.00}", e.NewValue);
+        }
+
+        private void rHandMaxLengthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            rightHandSwipeDetector.SwipeMaximalLength = e.NewValue;
+            rHandMaxLengthSliderBox.Content = string.Format("{0:0.00}", e.NewValue);
+        }
+
+        private void rHandMinHeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            rightHandSwipeDetector.SwipeMinimalHeight = e.NewValue;
+            rHandMinHeightSliderBox.Content = string.Format("{0:0.00}", e.NewValue);
+        }
+
+        private void rHandMaxHeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            rightHandSwipeDetector.SwipeMaximalHeight = e.NewValue;
+            rHandMaxHeightSliderBox.Content = string.Format("{0:0.00}", e.NewValue);
+        }
+
+        private void rHandMinDurationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            rightHandSwipeDetector.SwipeMinimalDuration = Convert.ToInt32(e.NewValue);
+            rHandMinDurationSliderBox.Content = Convert.ToInt32(e.NewValue);
+        }
+
+        private void rHandMaxDurationSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            rightHandSwipeDetector.SwipeMaximalDuration = Convert.ToInt32(e.NewValue);
+            rHandMaxDurationSliderBox.Content = Convert.ToInt32(e.NewValue);
         }
     }
 }

@@ -3,6 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="720" Width="1280" xmlns:my="clr-namespace:Kinesthesia.UI_Controllers" xmlns:my1="clr-namespace:Microsoft.Samples.Kinect.WpfViewers;assembly=Microsoft.Samples.Kinect.WpfViewers" Loaded="Window_Loaded" Closing="Window_Closing" BorderBrush="Black">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="588*" />
+            <RowDefinition Height="93*" />
+        </Grid.RowDefinitions>
         <my1:KinectSensorChooser HorizontalAlignment="Left" Margin="18,46,0,0" Name="kinectSensorChooser1" VerticalAlignment="Top" Width="328" KinectSensorChanged="kinectSensorChooser1_KinectSensorChanged" Kinect="{Binding}" />
         <my1:KinectColorViewer HorizontalAlignment="Left" Name="kinectColorViewer1" VerticalAlignment="Top" Height="480" Width="640" Kinect="{Binding ElementName=kinectSensorChooser1, Path=Kinect}" />
         <my1:KinectSkeletonViewer HorizontalAlignment="Left" Name="kinectSkeletonViewer1" VerticalAlignment="Top" Width="640" Height="480" Kinect="{Binding ElementName=kinectSensorChooser1, Path=Kinect}" />
@@ -22,23 +26,49 @@
         <Label Content="Play parsed MIDI(CSV) file" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="678,89,0,0" Name="label10" VerticalAlignment="Top" Width="164" />
         <Label Content="Open and parse CSV file" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="678,188,0,0" Name="label11" VerticalAlignment="Top" Width="160" />
         <Button Content="Open" Height="23" HorizontalAlignment="Left" Margin="708,235,0,0" Name="browseButton" VerticalAlignment="Top" Width="75" Click="browseButton_Click" />
-        <TextBox Height="227" HorizontalAlignment="Left" Margin="844,442,0,0" Name="settingsLog" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" VerticalAlignment="Top" Width="374" />
+        <TextBox Height="227" HorizontalAlignment="Left" Margin="844,442,0,0" Name="settingsLog" ScrollViewer.CanContentScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" VerticalAlignment="Top" Width="374" Grid.RowSpan="2" />
         <Label Content="Log" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="844,146,0,0" Name="label12" VerticalAlignment="Top" Width="160" />
         <Label Content="Settings log" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="844,413,0,0" Name="label13" VerticalAlignment="Top" Width="160" />
         <Label Content="Open and parse config file" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="678,290,0,0" Name="label14" VerticalAlignment="Top" Width="160" />
         <Button Content="Open" Height="23" HorizontalAlignment="Left" Margin="708,337,0,0" Name="settingsButton" VerticalAlignment="Top" Width="75" Click="settingsButton_Click" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="623,510,0,0" Name="slider1" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="623,539,0,0" Name="slider2" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="623,568,0,0" Name="slider3" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="623,597,0,0" Name="slider4" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="623,626,0,0" Name="slider5" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="623,652,0,0" Name="slider6" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="194,510,0,0" Name="slider7" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="194,539,0,0" Name="slider8" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="194,568,0,0" Name="slider9" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="194,597,0,0" Name="slider10" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="194,626,0,0" Name="slider11" VerticalAlignment="Top" Width="184" />
-        <Slider Height="23" HorizontalAlignment="Left" Margin="194,652,0,0" Name="slider12" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="569,510,0,0" Name="rHandMinLengthSlider" VerticalAlignment="Top" Width="184" Maximum="1" LargeChange="0.01" SmallChange="0.001" ValueChanged="rHandMinLengthSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="569,539,0,0" Name="rHandMaxLengthSlider" VerticalAlignment="Top" Width="184" Maximum="2" LargeChange="0.01" SmallChange="0.001" ValueChanged="rHandMaxLengthSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="569,568,0,0" Name="rHandMinHeightSlider" VerticalAlignment="Top" Width="184" Grid.RowSpan="2" LargeChange="0.01" Maximum="1" SmallChange="0.001" ValueChanged="rHandMinHeightSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="569,9,0,0" Name="rHandMaxHeightSlider" VerticalAlignment="Top" Width="184" Grid.Row="1" Maximum="1" LargeChange="0.01" SmallChange="0.01" ValueChanged="rHandMaxHeightSlider_ValueChanged" Value="0" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="569,38,0,0" Name="rHandMinDurationSlider" VerticalAlignment="Top" Width="184" Grid.Row="1" Maximum="3000" SmallChange="50" LargeChange="100" ValueChanged="rHandMinDurationSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="569,64,0,0" Name="rHandMaxDurationSlider" VerticalAlignment="Top" Width="184" Grid.Row="1" Maximum="3000" LargeChange="100" SmallChange="50" ValueChanged="rHandMaxDurationSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,510,0,0" Name="lHandMinLengthSlider" VerticalAlignment="Top" Width="184" Maximum="1" LargeChange="0.01" SmallChange="0.001" ValueChanged="lHandMinLengthSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,539,0,0" Name="lHandMaxLengthSlider" VerticalAlignment="Top" Width="184" Maximum="1" LargeChange="0.01" SmallChange="0.001" ValueChanged="lHandMaxLengthSlider_ValueChanged" />
+        <Slider HorizontalAlignment="Left" Margin="194,568,0,90" Name="lHandMinHeightSlider" Width="184" Grid.RowSpan="2" Maximum="1" LargeChange="0.01" SmallChange="0.001" ValueChanged="lHandMinHeightSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,9,0,0" Name="lHandMaxHeightSlider" VerticalAlignment="Top" Width="184" Grid.Row="1" Maximum="1" LargeChange="0.01" SmallChange="0.001" ValueChanged="lHandMaxHeightSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,38,0,0" Name="lHandMinDurationSlider" VerticalAlignment="Top" Width="184" Grid.Row="1" Maximum="3000" SmallChange="50" LargeChange="100" ValueChanged="lHandMinDurationSlider_ValueChanged" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,64,0,0" Name="lHandMaxDurationSlider" VerticalAlignment="Top" Width="184" Grid.Row="1" Maximum="3000" LargeChange="100" SmallChange="50" ValueChanged="lHandMaxDurationSlider_ValueChanged" />
         <Label Content="for MIDI track" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="703,201,0,0" Name="label15" VerticalAlignment="Top" Width="160" />
+        <Label Content="Minimal Length" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="90,505,0,0" Name="label22" VerticalAlignment="Top" Width="98" />
+        <Label Content="Maximal Length" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="87,534,0,0" Name="label23" VerticalAlignment="Top" Width="101" />
+        <Label Content="Minimal Height" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="90,563,0,0" Name="label24" VerticalAlignment="Top" Width="98" Grid.RowSpan="2" />
+        <Label Content="Maximal Height" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="87,4,0,0" Name="label25" VerticalAlignment="Top" Width="101" Grid.Row="1" />
+        <Label Content="Minimal Duration" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="76,33,0,0" Name="label26" VerticalAlignment="Top" Width="112" Grid.Row="1" />
+        <Label Content="Maximal Duration" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="76,59,0,0" Name="label27" VerticalAlignment="Top" Width="112" Grid.Row="1" />
+        <Label Content="Left Hand Swipe Gesture Properties" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="133,476,0,0" Name="label28" VerticalAlignment="Top" Width="213" />
+        <Label Content="Right Hand Swipe Gesture Properties" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="516,476,0,0" Name="label29" VerticalAlignment="Top" Width="219" />
+        <Label Content="Minimal Length" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="465,505,0,0" Name="label16" VerticalAlignment="Top" Width="98" />
+        <Label Content="Maximal Length" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="462,534,0,0" Name="label17" VerticalAlignment="Top" Width="101" />
+        <Label Content="Minimal Height" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="465,563,0,0" Name="label18" VerticalAlignment="Top" Width="98" Grid.RowSpan="2" />
+        <Label Content="Maximal Height" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="462,4,0,0" Name="label19" VerticalAlignment="Top" Width="101" Grid.Row="1" />
+        <Label Content="Minimal Duration" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="451,33,0,0" Name="label20" VerticalAlignment="Top" Width="112" Grid.Row="1" />
+        <Label Content="Maximal Duration" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="451,59,0,0" Name="label21" VerticalAlignment="Top" Width="112" Grid.Row="1" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="384,505,0,0" Name="lHandMinLengthSliderBox" VerticalAlignment="Top" Width="61" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="384,534,0,0" Name="lHandMaxLengthSliderBox" VerticalAlignment="Top" Width="61" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="384,560,0,0" Name="lHandMinHeightSliderBox" VerticalAlignment="Top" Width="61" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="384,0,0,0" Name="lHandMaxHeightSliderBox" VerticalAlignment="Top" Width="61" Grid.Row="1" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="384,33,0,0" Name="lHandMinDurationSliderBox" VerticalAlignment="Top" Width="61" Grid.Row="1" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="384,59,0,0" Name="lHandMaxDurationSliderBox" VerticalAlignment="Top" Width="62" Grid.Row="1" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="752,505,0,0" Name="rHandMinLengthSliderBox" VerticalAlignment="Top" Width="72" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="752,534,0,0" Name="rHandMaxLengthSliderBox" VerticalAlignment="Top" Width="71" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="752,560,0,0" Name="rHandMinHeightSliderBox" VerticalAlignment="Top" Width="71" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="752,0,0,0" Name="rHandMaxHeightSliderBox" VerticalAlignment="Top" Width="72" Grid.Row="1" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="752,33,0,0" Name="rHandMinDurationSliderBox" VerticalAlignment="Top" Width="72" Grid.Row="1" />
+        <Label Content="0" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="752,59,0,0" Name="rHandMaxDurationSliderBox" VerticalAlignment="Top" Width="70" Grid.Row="1" />
     </Grid>
 </Window>
