@@ -632,12 +632,14 @@ namespace Kinesthesia
             logBlock.Text += "\nREFRESH SETTINGS BLOCK";
             WriteCurrentConfigsToFile(Environment.CurrentDirectory + "\\temp.csv");
             ParseConfigs(Environment.CurrentDirectory + "\\temp.csv");
+            ScrollTheBox();
         }
 
         private void RestoreDefaultSettings()
         {
             logBlock.Text += "\nRESTORE DEFAULT SETTINGS";
             ParseConfigs(Environment.CurrentDirectory + @"\default.csv");
+            ScrollTheBox();
         }
 
         private void WriteCurrentConfigsToFile(string path)
@@ -771,7 +773,8 @@ namespace Kinesthesia
             File.CreateText(lastConfigFilePath).Dispose();
             WriteCurrentConfigsToFile(lastConfigFilePath);
             ParseConfigs(lastConfigFilePath);
-            logBlock.Text += "\nSAVE CONFIG FILE AT: " + lastConfigFilePath; 
+            logBlock.Text += "\nSAVE CONFIG FILE AT: " + lastConfigFilePath;
+            ScrollTheBox();
         }
 
         private void QuickLoadLastConfigFile()
@@ -780,6 +783,7 @@ namespace Kinesthesia
             {
                 ParseConfigs(lastConfigFilePath);
                 logBlock.Text += "\nOPEN CONFIG FILE AT: " + lastConfigFilePath;
+                ScrollTheBox();
             }
         }
 
@@ -789,6 +793,7 @@ namespace Kinesthesia
             {
                 ParseCSVAtPath(lastMIDIPath);
                 logBlock.Text += "\nOPEN MIDI FILE AT: " + lastMIDIPath;
+                ScrollTheBox();
             }
         }
 
