@@ -9,6 +9,8 @@ Project("{F088123C-0E9E-452A-89E6-6BA2F21D5CAC}") = "KinesthesiaModelingProject"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kinect.Toolbox", "Kinesthesia\3rd-party\KinectToolbox_src\Kinect.Toolbox.csproj", "{2C84CE43-CDAB-4541-A55A-7F849E8AC247}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kinect.Toolbox.Voice", "Kinesthesia\3rd-party\KinectToolbox_src\Kinect.Toolbox.Voice\Kinect.Toolbox.Voice.csproj", "{09DAE56B-715F-4069-BB66-A110D876A772}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,16 @@ Global
 		{2C84CE43-CDAB-4541-A55A-7F849E8AC247}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{2C84CE43-CDAB-4541-A55A-7F849E8AC247}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2C84CE43-CDAB-4541-A55A-7F849E8AC247}.Release|x86.ActiveCfg = Release|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{09DAE56B-715F-4069-BB66-A110D876A772}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

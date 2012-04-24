@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -12,15 +13,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Kinesthesia.UI_Controllers;
 using Microsoft.Kinect;
 using Kinesthesia.Model.MIDI;
 using Kinesthesia.Model.GestureRecognition;
-using Coding4Fun.Kinect.Wpf;
+//using Coding4Fun.Kinect.Wpf;
 using System.Reflection;
 using Microsoft.Win32;
 using Kinesthesia.Model.ConfigManager;
 using Kinect.Toolbox;
+using Kinect.Toolbox.Voice;
 
 namespace Kinesthesia
 {
@@ -41,14 +44,22 @@ namespace Kinesthesia
 
         private List<ConfigContainer> configurationList;
 
+        private string lastConfigFilePath;
+        private string lastMIDIPath;
+
+        private Dispatcher mainDispatcher = Dispatcher.CurrentDispatcher;
+
         /// <summary>
         /// gesture recognizers
         /// </summary>
         private SwipeGestureDetector rightHandSwipeDetector;
         private SwipeGestureDetector leftHandSwipeDetector;
 
+        private VoiceCommander voiceCommander;
+
         private List<TrackPlayer> trackPlayers;
         private bool shouldTrack = false;
+        private bool shouldRecognizeVoice = false;
 
         private string[] notes = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
         private int currNote = 0;
@@ -65,12 +76,31 @@ namespace Kinesthesia
         private KinectSensor sensor;
         private Point lastPoint;
 
+        #region window methods
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
             CreateAndInitializeDefaultGestureRecognizers();
         }
 
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            closing = true;
+            StopKinect(kinectSensorChooser1.Kinect);
+            File.CreateText(Environment.CurrentDirectory + @"\cache.txt").Dispose();
+            using (StreamWriter fileToWrite = new StreamWriter(Environment.CurrentDirectory + @"\cache.txt", false))
+            {
+                string lines = lastConfigFilePath + "\n" + lastMIDIPath;
+                fileToWrite.WriteLine(lines);
+                fileToWrite.Close();
+            }
+            voiceCommander.Stop();
+        }
+
+        #endregion
+
+        #region initializing methods
         private void CreateAndInitializeDefaultGestureRecognizers()
         {
             rightHandSwipeDetector = new SwipeGestureDetector();
@@ -79,7 +109,59 @@ namespace Kinesthesia
             leftHandSwipeDetector = new SwipeGestureDetector();
             leftHandSwipeDetector.OnGestureDetected += OnLeftGestureDetected;
 
-            ParseConfigs(@"c:\diploma\Kinesthesia\Kinesthesia\SupportingFiles\default.csv");
+            voiceCommander = new VoiceCommander("play", "stop", "track", "load", "save", "file", "refresh", "restore");
+            voiceCommander.OrderDetected += voiceCommander_OrderDetected;
+            
+            File.Copy(@"..\..\SupportingFiles\default.csv", Environment.CurrentDirectory + @"\default.csv", true);
+
+            System.IO.StreamReader fileToRead = new StreamReader(Environment.CurrentDirectory + @"\cache.txt");
+            lastConfigFilePath = fileToRead.ReadLine();
+            lastMIDIPath = fileToRead.ReadLine();
+            fileToRead.Close();
+
+            ParseConfigs(Environment.CurrentDirectory + @"\default.csv");
+        }
+        #endregion
+
+        #region gesture and voice recognition
+        private void voiceCommander_OrderDetected(string order)
+        {
+            Action action;
+            switch (order)
+            {
+                case "play":
+                    action = new Action(PlayTrack);
+                    mainDispatcher.Invoke(action);
+                    break;
+                case "stop":
+                    action = new Action(PlayTrack);
+                    mainDispatcher.Invoke(action);
+                    break;
+                case "track":
+                    action = new Action(StartTracking);
+                    mainDispatcher.Invoke(action);
+                    break;
+                case "load":
+                    action = new Action(QuickLoadLastConfigFile);
+                    mainDispatcher.Invoke(action);
+                    break;
+                case "save":
+                    action = new Action(QuickSaveForConfigFile);
+                    mainDispatcher.Invoke(action);
+                    break;
+                case "file":
+                    action = new Action(QuickLoadLastMIDIFile);
+                    mainDispatcher.Invoke(action);
+                    break;
+                case "refresh":
+                    action = new Action(RefreshSettingsLog);
+                    mainDispatcher.Invoke(action);
+                    break;
+                case "restore":
+                    action = new Action(RestoreDefaultSettings);
+                    mainDispatcher.Invoke(action);
+                    break;
+            }
         }
         
         void OnRightGestureDetected(string gesture, Point p)
@@ -129,105 +211,9 @@ namespace Kinesthesia
             MethodInfo method = typeof(MainWindow).GetMethod(methodName, bindingFlags);
             method.Invoke(this, args);
         }
+        #endregion
 
-        private void ParseConfigs(string path)
-        {
-            ConfigParser configParser = new ConfigParser();
-            configurationList = configParser.ParseConfigs(path);
-
-            settingsLog.Text = "";
-            
-            foreach (var configContainer in configurationList)
-            {
-                if (configContainer.ConfigType == "Calibration")
-                {
-                    settingsLog.Text += "\n" + Convert.ToString(configContainer.JointType) + "\n         " +
-                                        "min length = " + configContainer.SwipeMinimalLength + " " +
-                                        "max length = " + configContainer.SwipeMaximalLength + "\n         " +
-                                        "min height = " + configContainer.SwipeMinimalHeight + " " +
-                                        "max height = " + configContainer.SwipeMaximalHeight + "\n         " +
-                                        "min duration = " + configContainer.SwipeMinimalDuration + " " +
-                                        "max duration = " + configContainer.SwipeMaximalDuration + "\n";
-                    ScrollTheBox();
-
-                    if (configContainer.JointType == JointType.HandRight)
-                    {
-                        rightHandSwipeDetector.SwipeMinimalLength = configContainer.SwipeMinimalLength;
-                        rightHandSwipeDetector.SwipeMaximalLength = configContainer.SwipeMaximalLength;
-                        rightHandSwipeDetector.SwipeMinimalHeight = configContainer.SwipeMinimalHeight;
-                        rightHandSwipeDetector.SwipeMaximalHeight = configContainer.SwipeMaximalHeight;
-                        rightHandSwipeDetector.SwipeMinimalDuration = configContainer.SwipeMinimalDuration;
-                        rightHandSwipeDetector.SwipeMaximalDuration = configContainer.SwipeMaximalDuration;
-
-                        rHandMinLengthSlider.Value = configContainer.SwipeMinimalLength;
-                        rHandMaxLengthSlider.Value = configContainer.SwipeMaximalLength;
-                        rHandMinHeightSlider.Value = configContainer.SwipeMinimalHeight;
-                        rHandMaxHeightSlider.Value = configContainer.SwipeMaximalHeight;
-                        rHandMinDurationSlider.Value = configContainer.SwipeMinimalDuration;
-                        rHandMaxDurationSlider.Value = configContainer.SwipeMaximalDuration;
-
-                        rHandMinLengthSliderBox.Content = configContainer.SwipeMinimalLength;
-                        rHandMaxLengthSliderBox.Content = configContainer.SwipeMaximalLength;
-                        rHandMinHeightSliderBox.Content = configContainer.SwipeMinimalHeight;
-                        rHandMaxHeightSliderBox.Content = configContainer.SwipeMaximalHeight;
-                        rHandMinDurationSliderBox.Content = configContainer.SwipeMinimalDuration;
-                        rHandMaxDurationSliderBox.Content = configContainer.SwipeMaximalDuration;
-                    }
-                    else if (configContainer.JointType == JointType.HandLeft)
-                    {
-                        leftHandSwipeDetector.SwipeMinimalLength = configContainer.SwipeMinimalLength;
-                        leftHandSwipeDetector.SwipeMaximalLength = configContainer.SwipeMaximalLength;
-                        leftHandSwipeDetector.SwipeMinimalHeight = configContainer.SwipeMinimalHeight;
-                        leftHandSwipeDetector.SwipeMaximalHeight = configContainer.SwipeMaximalHeight;
-                        leftHandSwipeDetector.SwipeMinimalDuration = configContainer.SwipeMinimalDuration;
-                        leftHandSwipeDetector.SwipeMaximalDuration = configContainer.SwipeMaximalDuration;
-
-                        lHandMinLengthSlider.Value = configContainer.SwipeMinimalLength;
-                        lHandMaxLengthSlider.Value = configContainer.SwipeMaximalLength;
-                        lHandMinHeightSlider.Value = configContainer.SwipeMinimalHeight;
-                        lHandMaxHeightSlider.Value = configContainer.SwipeMaximalHeight;
-                        lHandMinDurationSlider.Value = configContainer.SwipeMinimalDuration;
-                        lHandMaxDurationSlider.Value = configContainer.SwipeMaximalDuration;
-
-                        lHandMinLengthSliderBox.Content = configContainer.SwipeMinimalLength;
-                        lHandMaxLengthSliderBox.Content = configContainer.SwipeMaximalLength;
-                        lHandMinHeightSliderBox.Content = configContainer.SwipeMinimalHeight;
-                        lHandMaxHeightSliderBox.Content = configContainer.SwipeMaximalHeight;
-                        lHandMinDurationSliderBox.Content = configContainer.SwipeMinimalDuration;
-                        lHandMaxDurationSliderBox.Content = configContainer.SwipeMaximalDuration;
-                    }
-                }
-                else if (configContainer.ConfigType == "Event")
-                {
-                    settingsLog.Text += "\n" + Convert.ToString(configContainer.JointType) + " " +
-                                        configContainer.EventName + " " + configContainer.MethodName;
-                    ScrollTheBox();
-                }
-            }
-        }
-
-        private void ParseCSVAtPath(string path)
-        {
-            trackList = midiPl.ParseMIDIFileInCSV(path);
-
-            PrintTrackListToSettingsLog();
-
-            trackPlayers = new List<TrackPlayer>();
-
-            track1 = new TrackPlayer(trackList[0]);
-            track2 = new TrackPlayer(trackList[2]);
-            track3 = new TrackPlayer(trackList[1]);
-        }
-
-        private void PrintTrackListToSettingsLog()
-        {
-            settingsLog.Text = "MIDI Track Properties: \n \n";
-            foreach (var track in trackList)
-            {
-                settingsLog.Text += track.TrackNumber + " " + track.TrackName + "\n";
-            }
-        }
-
+        #region MIDI methods
         private void ChangeVelocity(JointType joint, Point point)
         {
             int velocity = ValueToVelocity(480, point.Y);
@@ -246,8 +232,7 @@ namespace Kinesthesia
                 ScrollTheBox();
             }
         }
-
-
+        
         private int ValueToVelocity (int scope, double value)
         {
             return Convert.ToInt32(127*value/scope);
@@ -298,7 +283,9 @@ namespace Kinesthesia
             ScrollTheBox();
         }
 
+        #endregion
 
+        #region Kinect methods
         private void kinectSensorChooser1_KinectSensorChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             KinectSensor old = (KinectSensor)e.OldValue;
@@ -317,7 +304,7 @@ namespace Kinesthesia
             sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
             sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
             sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
-
+            
             try
             {
                 sensor.Start();
@@ -367,73 +354,69 @@ namespace Kinesthesia
         void GetCameraPoint(Skeleton first, AllFramesReadyEventArgs e)
         {
 
-            using (DepthImageFrame depth = e.OpenDepthImageFrame())
+            if (!closing)
             {
-                if (depth == null ||
-                    kinectSensorChooser1.Kinect == null)
+                using (DepthImageFrame depth = e.OpenDepthImageFrame())
                 {
-                    return;
-                }
+                    if (depth == null ||
+                        kinectSensorChooser1.Kinect == null)
+                    {
+                        return;
+                    }
 
-                Joint left = first.Joints[JointType.HandLeft];
-                Joint right = first.Joints[JointType.HandRight];
+                    Joint left = first.Joints[JointType.HandLeft];
+                    Joint right = first.Joints[JointType.HandRight];
 
-                //Map a joint location to a point on the depth map
-                //head
-                DepthImagePoint headDepthPoint =
-                    depth.MapFromSkeletonPoint(first.Joints[JointType.Head].Position);
-                //left hand
-                DepthImagePoint leftDepthPoint =
-                    depth.MapFromSkeletonPoint(left.Position);
-                //right hand
-                DepthImagePoint rightDepthPoint =
-                    depth.MapFromSkeletonPoint(right.Position);
+                    //Map a joint location to a point on the depth map
+                    //head
+                    DepthImagePoint headDepthPoint =
+                        depth.MapFromSkeletonPoint(first.Joints[JointType.Head].Position);
+                    //left hand
+                    DepthImagePoint leftDepthPoint =
+                        depth.MapFromSkeletonPoint(left.Position);
+                    //right hand
+                    DepthImagePoint rightDepthPoint =
+                        depth.MapFromSkeletonPoint(right.Position);
 
 
-                //Map a depth point to a point on the color image
-                //head
-                ColorImagePoint headColorPoint =
-                    depth.MapToColorImagePoint(headDepthPoint.X, headDepthPoint.Y,
-                    ColorImageFormat.RgbResolution640x480Fps30);
-                //left hand
-                ColorImagePoint leftColorPoint =
-                    depth.MapToColorImagePoint(leftDepthPoint.X, leftDepthPoint.Y,
-                    ColorImageFormat.RgbResolution640x480Fps30);
-                //right hand
-                ColorImagePoint rightColorPoint =
-                    depth.MapToColorImagePoint(rightDepthPoint.X, rightDepthPoint.Y,
-                    ColorImageFormat.RgbResolution640x480Fps30);
+                    //Map a depth point to a point on the color image
+                    //head
+                    ColorImagePoint headColorPoint =
+                        depth.MapToColorImagePoint(headDepthPoint.X, headDepthPoint.Y,
+                        ColorImageFormat.RgbResolution640x480Fps30);
+                    //left hand
+                    ColorImagePoint leftColorPoint =
+                        depth.MapToColorImagePoint(leftDepthPoint.X, leftDepthPoint.Y,
+                        ColorImageFormat.RgbResolution640x480Fps30);
+                    //right hand
+                    ColorImagePoint rightColorPoint =
+                        depth.MapToColorImagePoint(rightDepthPoint.X, rightDepthPoint.Y,
+                        ColorImageFormat.RgbResolution640x480Fps30);
 
-                Point rightPoint = new Point(rightColorPoint.X, rightColorPoint.Y);
-                Point leftPoint = new Point(leftColorPoint.X, leftColorPoint.Y);
+                    Point rightPoint = new Point(rightColorPoint.X, rightColorPoint.Y);
+                    Point leftPoint = new Point(leftColorPoint.X, leftColorPoint.Y);
 
-                Point[] points = { leftPoint, rightPoint };
+                    if (shouldTrack)
+                    {
+                        SkeletonPoint lpoint = new SkeletonPoint();
+                        lpoint.X = (float)leftPoint.X;
+                        lpoint.Y = (float)leftPoint.Y;
+                        lpoint.Z = 0;
 
-                label2.Content = leftPoint.X;
-                label3.Content = leftPoint.Y;
-                label5.Content = rightPoint.X;
-                label6.Content = rightPoint.Y;
+                        SkeletonPoint rpoint = new SkeletonPoint();
+                        rpoint.X = (float)rightPoint.X;
+                        rpoint.Y = (float)rightPoint.Y;
+                        rpoint.Z = 0;
 
-                if (shouldTrack)
-                {
-                    SkeletonPoint lpoint = new SkeletonPoint();
-                    lpoint.X = (float) leftPoint.X;
-                    lpoint.Y = (float) leftPoint.Y;
-                    lpoint.Z = 0;
+                        //leftHandRecognizer.AddCoordinate(lpoint);
+                        //rightHandRecognizer.AddCoordinate(rpoint);
+                        lastPoint = rightPoint;
+                        //swipeDetector.Add(right.Position, sensor);
+                        rightHandSwipeDetector.Add(right.Position, sensor);
+                        leftHandSwipeDetector.Add(left.Position, sensor);
 
-                    SkeletonPoint rpoint = new SkeletonPoint();
-                    rpoint.X = (float)rightPoint.X;
-                    rpoint.Y = (float)rightPoint.Y;
-                    rpoint.Z = 0;
-
-                    //leftHandRecognizer.AddCoordinate(lpoint);
-                    //rightHandRecognizer.AddCoordinate(rpoint);
-                    lastPoint = rightPoint;
-                    //swipeDetector.Add(right.Position, sensor);
-                    rightHandSwipeDetector.Add(right.Position, sensor);
-                    leftHandSwipeDetector.Add(left.Position, sensor);
-
-                    //logBlock.Text += "\n NEW POINT " + leftHandRecognizer.currPointNumber() + " X: " + point.X + " Y: " + point.Y;
+                        //logBlock.Text += "\n NEW POINT " + leftHandRecognizer.currPointNumber() + " X: " + point.X + " Y: " + point.Y;
+                    }
                 }
             }
         }
@@ -460,13 +443,277 @@ namespace Kinesthesia
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        #endregion
+
+        #region parsing methods
+        private void ParseConfigs(string path)
         {
-            closing = true;
-            StopKinect(kinectSensorChooser1.Kinect); 
+            ConfigParser configParser = new ConfigParser();
+            configurationList = configParser.ParseConfigs(path);
+
+            settingsLog.Text = "";
+
+            for (int i = 0; i < configurationList.Count(); i++)
+            {
+                ConfigContainer configContainer = configurationList[i];
+                if (configContainer.ConfigType == "Calibration")
+                {
+                    settingsLog.Text += Convert.ToString(configContainer.JointType) + ", " +
+                                        configContainer.SwipeMinimalLength + ", " +
+                                        configContainer.SwipeMaximalLength + ", " +
+                                        configContainer.SwipeMinimalHeight + ", " +
+                                        configContainer.SwipeMaximalHeight + ", " +
+                                        configContainer.SwipeMinimalDuration + ", " +
+                                        configContainer.SwipeMaximalDuration + "\n";
+                    ScrollTheBox();
+
+                    if (configContainer.JointType == JointType.HandRight)
+                    {
+                        rightHandSwipeDetector.SwipeMinimalLength = configContainer.SwipeMinimalLength;
+                        rightHandSwipeDetector.SwipeMaximalLength = configContainer.SwipeMaximalLength;
+                        rightHandSwipeDetector.SwipeMinimalHeight = configContainer.SwipeMinimalHeight;
+                        rightHandSwipeDetector.SwipeMaximalHeight = configContainer.SwipeMaximalHeight;
+                        rightHandSwipeDetector.SwipeMinimalDuration = configContainer.SwipeMinimalDuration;
+                        rightHandSwipeDetector.SwipeMaximalDuration = configContainer.SwipeMaximalDuration;
+
+                        rHandMinLengthSlider.Value = configContainer.SwipeMinimalLength;
+                        rHandMaxLengthSlider.Value = configContainer.SwipeMaximalLength;
+                        rHandMinHeightSlider.Value = configContainer.SwipeMinimalHeight;
+                        rHandMaxHeightSlider.Value = configContainer.SwipeMaximalHeight;
+                        rHandMinDurationSlider.Value = configContainer.SwipeMinimalDuration;
+                        rHandMaxDurationSlider.Value = configContainer.SwipeMaximalDuration;
+
+                        rHandMinLengthSliderBox.Content = configContainer.SwipeMinimalLength;
+                        rHandMaxLengthSliderBox.Content = configContainer.SwipeMaximalLength;
+                        rHandMinHeightSliderBox.Content = configContainer.SwipeMinimalHeight;
+                        rHandMaxHeightSliderBox.Content = configContainer.SwipeMaximalHeight;
+                        rHandMinDurationSliderBox.Content = configContainer.SwipeMinimalDuration;
+                        rHandMaxDurationSliderBox.Content = configContainer.SwipeMaximalDuration;
+                    }
+                    else if (configContainer.JointType == JointType.HandLeft)
+                    {
+                        leftHandSwipeDetector.SwipeMinimalLength = configContainer.SwipeMinimalLength;
+                        leftHandSwipeDetector.SwipeMaximalLength = configContainer.SwipeMaximalLength;
+                        leftHandSwipeDetector.SwipeMinimalHeight = configContainer.SwipeMinimalHeight;
+                        leftHandSwipeDetector.SwipeMaximalHeight = configContainer.SwipeMaximalHeight;
+                        leftHandSwipeDetector.SwipeMinimalDuration = configContainer.SwipeMinimalDuration;
+                        leftHandSwipeDetector.SwipeMaximalDuration = configContainer.SwipeMaximalDuration;
+
+                        lHandMinLengthSlider.Value = configContainer.SwipeMinimalLength;
+                        lHandMaxLengthSlider.Value = configContainer.SwipeMaximalLength;
+                        lHandMinHeightSlider.Value = configContainer.SwipeMinimalHeight;
+                        lHandMaxHeightSlider.Value = configContainer.SwipeMaximalHeight;
+                        lHandMinDurationSlider.Value = configContainer.SwipeMinimalDuration;
+                        lHandMaxDurationSlider.Value = configContainer.SwipeMaximalDuration;
+
+                        lHandMinLengthSliderBox.Content = configContainer.SwipeMinimalLength;
+                        lHandMaxLengthSliderBox.Content = configContainer.SwipeMaximalLength;
+                        lHandMinHeightSliderBox.Content = configContainer.SwipeMinimalHeight;
+                        lHandMaxHeightSliderBox.Content = configContainer.SwipeMaximalHeight;
+                        lHandMinDurationSliderBox.Content = configContainer.SwipeMinimalDuration;
+                        lHandMaxDurationSliderBox.Content = configContainer.SwipeMaximalDuration;
+                    }
+                }
+            }
+            settingsLog.Text += "---\n";
+            for (int i = 0; i < configurationList.Count(); i++)
+            {
+                ConfigContainer configContainer = configurationList[i];
+                if (configContainer.ConfigType == "Event")
+                {
+                    settingsLog.Text += Convert.ToString(configContainer.JointType) + ", " +
+                                        configContainer.EventName + ", " + configContainer.MethodName;
+                    ScrollTheBox();
+                    if (i != configurationList.Count() - 1)
+                    {
+                        settingsLog.Text += "\n";
+                    }
+                }
+            }
+
+            File.CreateText(Environment.CurrentDirectory + "\\temp.csv").Dispose();
+
+            WriteCurrentConfigsToFile(Environment.CurrentDirectory + "\\temp.csv");
         }
 
-        private void trackButton_Click(object sender, RoutedEventArgs e)
+        private void ParseCSVAtPath(string path)
+        {
+            lastMIDIPath = path;
+            trackList = midiPl.ParseMIDIFileInCSV(path);
+
+            PrintTrackListToSettingsLog();
+
+            trackPlayers = new List<TrackPlayer>();
+
+            track1 = new TrackPlayer(trackList[0]);
+            track2 = new TrackPlayer(trackList[2]);
+            track3 = new TrackPlayer(trackList[1]);
+        }
+        #endregion
+
+        #region boxes methods
+        private void PrintTrackListToSettingsLog()
+        {
+            logBlock.Text += "\nMIDI Track Properties: \n \n";
+            foreach (var track in trackList)
+            {
+                logBlock.Text += track.TrackNumber + " " + track.TrackName + "\n";
+            }
+        }
+
+        private void ScrollTheBox()
+        {
+            logBlock.SelectionStart = logBlock.Text.Length;
+            logBlock.ScrollToEnd();
+
+            settingsLog.SelectionStart = settingsLog.Text.Length;
+            settingsLog.ScrollToEnd();
+        }
+        #endregion
+
+        #region action methods
+        private void PlayTrack()
+        {
+            if (!isPlaying)
+            {
+                playButton.Content = "Pause";
+                isPlaying = true;
+                midiPl.PlayParsedFile();
+            }
+            else
+            {
+                playButton.Content = "Play";
+                isPlaying = false;
+                midMan.Clock.Stop();
+            }
+        }
+
+        private void OpenConfigFile()
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+
+            dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+
+            dialog.InitialDirectory = Environment.CurrentDirectory;
+            dialog.Title = "Select a CSV file";
+
+            dialog.ShowDialog();
+
+            if (dialog.FileName != string.Empty)
+            {
+                lastConfigFilePath = dialog.FileName;
+                logBlock.Text += "\nOPEN CONFIG FILE AT: " + dialog.FileName;
+                ScrollTheBox();
+                ParseConfigs(dialog.FileName);
+            }
+        }
+
+        private void OpenMIDIFile()
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+
+            dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+
+            dialog.InitialDirectory = Environment.CurrentDirectory;
+            dialog.Title = "Select a CSV file";
+
+            dialog.ShowDialog();
+
+            if (dialog.FileName != string.Empty)
+            {
+                logBlock.Text += "\nOPEN CSV FILE AT: " + dialog.FileName;
+                ScrollTheBox();
+                ParseCSVAtPath(dialog.FileName);
+            }
+        }
+
+        private void RefreshSettingsLog()
+        {
+            logBlock.Text += "\nREFRESH SETTINGS BLOCK";
+            WriteCurrentConfigsToFile(Environment.CurrentDirectory + "\\temp.csv");
+            ParseConfigs(Environment.CurrentDirectory + "\\temp.csv");
+        }
+
+        private void RestoreDefaultSettings()
+        {
+            logBlock.Text += "\nRESTORE DEFAULT SETTINGS";
+            ParseConfigs(Environment.CurrentDirectory + @"\default.csv");
+        }
+
+        private void WriteCurrentConfigsToFile(string path)
+        {
+            using (StreamWriter fileToWrite = new StreamWriter(path, false))
+            {
+                string lines = string.Empty;
+
+                lines += "HandRight" +
+                         ", " + string.Format("{0:0.00}", rightHandSwipeDetector.SwipeMinimalLength) +
+                         ", " + string.Format("{0:0.00}", rightHandSwipeDetector.SwipeMaximalLength) +
+                         ", " + string.Format("{0:0.00}", rightHandSwipeDetector.SwipeMinimalHeight) +
+                         ", " + string.Format("{0:0.00}", rightHandSwipeDetector.SwipeMaximalHeight) +
+                         ", " + rightHandSwipeDetector.SwipeMinimalDuration +
+                         ", " + rightHandSwipeDetector.SwipeMaximalDuration + "\n";
+                lines += "HandLeft" +
+                         ", " + string.Format("{0:0.00}", leftHandSwipeDetector.SwipeMinimalLength) +
+                         ", " + string.Format("{0:0.00}", leftHandSwipeDetector.SwipeMaximalLength) +
+                         ", " + string.Format("{0:0.00}", leftHandSwipeDetector.SwipeMinimalHeight) +
+                         ", " + string.Format("{0:0.00}", leftHandSwipeDetector.SwipeMaximalHeight) +
+                         ", " + leftHandSwipeDetector.SwipeMinimalDuration +
+                         ", " + leftHandSwipeDetector.SwipeMaximalDuration + "\n";
+                
+                string settingsLogText = settingsLog.Text;
+
+                int swipeIndex = settingsLogText.IndexOf("---\n");
+
+                lines += settingsLogText.Substring(swipeIndex + 4);
+
+                fileToWrite.WriteLine(lines);
+                fileToWrite.Close();
+            }
+        }
+
+        private void SaveConfigFile()
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+
+            dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+
+            dialog.InitialDirectory = Environment.CurrentDirectory;
+            dialog.Title = "Select a CSV file";
+
+            dialog.ShowDialog();
+
+            if (dialog.FileName != string.Empty)
+            {
+                WriteCurrentConfigsToFile(dialog.FileName);
+                ParseConfigs(dialog.FileName);
+                lastConfigFilePath = dialog.FileName;
+                logBlock.Text += "\nSAVE CSV FILE AT: " + dialog.FileName;
+                ScrollTheBox();
+            }
+        }
+
+        private void StartVoiceRecognition()
+        {
+            if (!shouldRecognizeVoice)
+            {
+                voiceRecognizerButton.Content = "Stop";
+                shouldRecognizeVoice = true;
+                voiceCommander.Start(sensor);
+                logBlock.Text += "\nStart Voice Recognition";
+                ScrollTheBox();
+            }
+            else
+            {
+                voiceRecognizerButton.Content = "Start";
+                shouldRecognizeVoice = false;
+                logBlock.Text += "\nStop Voice Recognition";
+                ScrollTheBox();
+                voiceCommander.Stop();
+            }
+        }
+
+        private void StartTracking()
         {
             if (!shouldTrack)
             {
@@ -505,7 +752,6 @@ namespace Kinesthesia
                 rHandMinDurationSlider.IsEnabled = true;
                 rHandMaxDurationSlider.IsEnabled = true;
 
-
                 midMan.SendPitchBend(8192);
                 midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
                 trackButton.Content = "Start";
@@ -514,74 +760,100 @@ namespace Kinesthesia
                 ScrollTheBox();
             }
         }
-        
-        private void ScrollTheBox()
-        {
-            logBlock.SelectionStart = logBlock.Text.Length;
-            logBlock.ScrollToEnd();
 
-            settingsLog.SelectionStart = settingsLog.Text.Length;
-            settingsLog.ScrollToEnd();
+        private void QuickSaveForConfigFile()
+        {
+            DateTime date = DateTime.Now;
+            DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            TimeSpan span = (date - epoch);
+            int unixTime = Convert.ToInt32(span.TotalSeconds);
+            lastConfigFilePath = Environment.CurrentDirectory + "\\" + unixTime + ".csv";
+            File.CreateText(lastConfigFilePath).Dispose();
+            WriteCurrentConfigsToFile(lastConfigFilePath);
+            ParseConfigs(lastConfigFilePath);
+            logBlock.Text += "\nSAVE CONFIG FILE AT: " + lastConfigFilePath; 
         }
 
+        private void QuickLoadLastConfigFile()
+        {
+            if (lastConfigFilePath != string.Empty)
+            {
+                ParseConfigs(lastConfigFilePath);
+                logBlock.Text += "\nOPEN CONFIG FILE AT: " + lastConfigFilePath;
+            }
+        }
+
+        private void QuickLoadLastMIDIFile()
+        {
+            if (lastMIDIPath != string.Empty)
+            {
+                ParseCSVAtPath(lastMIDIPath);
+                logBlock.Text += "\nOPEN MIDI FILE AT: " + lastMIDIPath;
+            }
+        }
+
+        #endregion
+
+        #region button clicking events
+
+        private void trackButton_Click(object sender, RoutedEventArgs e)
+        {
+            StartTracking();
+        }
+
+        private void voiceRecognizerButton_Click(object sender, RoutedEventArgs e)
+        {
+            StartVoiceRecognition();
+        }
+        
         private void playButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!isPlaying)
-            {
-                playButton.Content = "Pause";
-                isPlaying = true;
-                midiPl.PlayParsedFile();
-            }
-            else
-            {
-                playButton.Content = "Play";
-                isPlaying = false;
-                midMan.Clock.Stop();
-            }
+            PlayTrack();
         }
 
         private void browseButton_Click(object sender, RoutedEventArgs e)
         {
-            string input = string.Empty;
- 
-            OpenFileDialog dialog = new OpenFileDialog();
-
-            dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
-
-            dialog.InitialDirectory = Environment.CurrentDirectory; 
-            dialog.Title = "Select a CSV file";
-
-            dialog.ShowDialog();
-
-            if (dialog.FileName != string.Empty)
-            {
-                logBlock.Text += "OPEN CSV FILE AT: " + dialog.FileName;
-                ScrollTheBox();
-                ParseCSVAtPath(dialog.FileName);
-            }
-              
+            OpenMIDIFile();              
         }
 
         private void settingsButton_Click(object sender, RoutedEventArgs e)
         {
-            string input = string.Empty;
-
-            OpenFileDialog dialog = new OpenFileDialog();
-
-            dialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
-
-            dialog.InitialDirectory = Environment.CurrentDirectory;
-            dialog.Title = "Select a CSV file";
-
-            dialog.ShowDialog();
-
-            if (dialog.FileName != string.Empty)
-            {
-                logBlock.Text += "OPEN CONFIG FILE AT: " + dialog.FileName;
-                ScrollTheBox();
-                ParseConfigs(dialog.FileName);
-            }
+            OpenConfigFile();
         }
+
+        private void saveConfigFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            SaveConfigFile();
+        }
+
+        private void refreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshSettingsLog();
+        }
+
+        private void restoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            RestoreDefaultSettings();
+        }
+
+        private void quickSaveConfig_Click(object sender, RoutedEventArgs e)
+        {
+            QuickSaveForConfigFile();
+        }
+
+        private void quickLoadConfig_Click(object sender, RoutedEventArgs e)
+        {
+            QuickLoadLastConfigFile();
+        }
+
+        private void quickLoadMIDI_Click(object sender, RoutedEventArgs e)
+        {
+            QuickLoadLastMIDIFile();
+        }
+
+        #endregion
+
+        #region sliders events
 
         private void lHandMinLengthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -654,5 +926,7 @@ namespace Kinesthesia
             rightHandSwipeDetector.SwipeMaximalDuration = Convert.ToInt32(e.NewValue);
             rHandMaxDurationSliderBox.Content = Convert.ToInt32(e.NewValue);
         }
+
+        #endregion
     }
 }

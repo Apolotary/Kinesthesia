@@ -133,6 +133,10 @@
       <Project>{2C84CE43-CDAB-4541-A55A-7F849E8AC247}</Project>
       <Name>Kinect.Toolbox</Name>
     </ProjectReference>
+    <ProjectReference Include="3rd-party\KinectToolbox_src\Kinect.Toolbox.Voice\Kinect.Toolbox.Voice.csproj">
+      <Project>{09DAE56B-715F-4069-BB66-A110D876A772}</Project>
+      <Name>Kinect.Toolbox.Voice</Name>
+    </ProjectReference>
     <ProjectReference Include="3rd-party\KinectWpfViewers\Microsoft.Samples.Kinect.WpfViewers.csproj">
       <Project>{4DE23893-27E7-423F-9BB6-BA21DAC2C45E}</Project>
       <Name>Microsoft.Samples.Kinect.WpfViewers</Name>

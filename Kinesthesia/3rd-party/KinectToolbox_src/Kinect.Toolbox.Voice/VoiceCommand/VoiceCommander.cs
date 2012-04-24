@@ -65,6 +65,7 @@ namespace Kinect.Toolbox.Voice
                 speechRecognitionEngine.SetInputToAudioStream(sourceStream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
 
                 isRunning = true;
+
                 while (isRunning)
                 {
                     RecognitionResult result = speechRecognitionEngine.Recognize();
