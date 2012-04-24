@@ -102,14 +102,14 @@ where the parameters are:
 
 The remaining 8 lines cover events and methods which should be called. 
 
-HandRight, SwipeToRight, SendNote           
-HandRight, SwipeToLeft,  SendNote           
-HandRight, SwipeUp,      SendNote          
-HandRight, SwipeDown,    SendNote         
-HandLeft,  SwipeToRight, ChangeVolume        
-HandLeft,  SwipeToLeft,  ChangeVolume     
-HandLeft,  SwipeUp,      BendPitch     
-HandLeft,  SwipeDown,    BendPitch
+`HandRight, SwipeToRight, SendNote `          
+`HandRight, SwipeToLeft,  SendNote  `         
+`HandRight, SwipeUp,      SendNote  `        
+`HandRight, SwipeDown,    SendNote  `       
+`HandLeft,  SwipeToRight, ChangeVolume`        
+`HandLeft,  SwipeToLeft,  ChangeVolume   `  
+`HandLeft,  SwipeUp,      BendPitch  `   
+`HandLeft,  SwipeDown,    BendPitch`
 
 The parameters are:
 
