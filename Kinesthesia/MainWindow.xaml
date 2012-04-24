@@ -27,5 +27,18 @@
         <Label Content="Settings log" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="844,413,0,0" Name="label13" VerticalAlignment="Top" Width="160" />
         <Label Content="Open and parse config file" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="678,290,0,0" Name="label14" VerticalAlignment="Top" Width="160" />
         <Button Content="Open" Height="23" HorizontalAlignment="Left" Margin="708,337,0,0" Name="settingsButton" VerticalAlignment="Top" Width="75" Click="settingsButton_Click" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="623,510,0,0" Name="slider1" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="623,539,0,0" Name="slider2" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="623,568,0,0" Name="slider3" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="623,597,0,0" Name="slider4" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="623,626,0,0" Name="slider5" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="623,652,0,0" Name="slider6" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,510,0,0" Name="slider7" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,539,0,0" Name="slider8" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,568,0,0" Name="slider9" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,597,0,0" Name="slider10" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,626,0,0" Name="slider11" VerticalAlignment="Top" Width="184" />
+        <Slider Height="23" HorizontalAlignment="Left" Margin="194,652,0,0" Name="slider12" VerticalAlignment="Top" Width="184" />
+        <Label Content="for MIDI track" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="703,201,0,0" Name="label15" VerticalAlignment="Top" Width="160" />
     </Grid>
 </Window>

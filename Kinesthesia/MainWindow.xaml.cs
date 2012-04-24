@@ -44,34 +44,13 @@ namespace Kinesthesia
         /// <summary>
         /// gesture recognizers
         /// </summary>
-        private GestureRecognizer leftHandRecognizer;
-        private GestureRecognizer rightHandRecognizer;
-        private SwipeGestureDetector swipeDetector;
-
-        /// <summary>
-        /// events for gestures
-        /// </summary>
-        private EventInfo xAxisIncreasedEvent;
-        private EventInfo xAxisDecreasedEvent;
-        private EventInfo yAxisIncreasedEvent;
-        private EventInfo yAxisDecreasedEvent;
-
-        /// <summary>
-        /// delegates for gestures
-        /// </summary>
-        private Delegate rightHandXAxisIncreasedEventHandler;
-        private Delegate rightHandXAxisDecreasedEventHandler;
-        private Delegate rightHandYAxisIncreasedEventHandler;
-        private Delegate rightHandYAxisDecreasedEventHandler;
-        private Delegate leftHandXAxisIncreasedEventHandler;
-        private Delegate leftHandXAxisDecreasedEventHandler;
-        private Delegate leftHandYAxisIncreasedEventHandler;
-        private Delegate leftHandYAxisDecreasedEventHandler;
+        private SwipeGestureDetector rightHandSwipeDetector;
+        private SwipeGestureDetector leftHandSwipeDetector;
 
         private List<TrackPlayer> trackPlayers;
         private bool shouldTrack = false;
 
-        private string[] notes = {"C", "D", "E", "F", "G", "A", "B"};
+        private string[] notes = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
         private int currNote = 0;
         private int currOctave = 5;
         private int currVelocity = 80;
@@ -94,131 +73,109 @@ namespace Kinesthesia
 
         private void CreateAndInitializeDefaultGestureRecognizers()
         {
-            leftHandRecognizer = new GestureRecognizer(60, 30, JointType.HandLeft);
-            rightHandRecognizer = new GestureRecognizer(60, 30, JointType.HandRight);
-            
-            // binding events 
-            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            rightHandSwipeDetector = new SwipeGestureDetector();
+            rightHandSwipeDetector.OnGestureDetected += OnRightGestureDetected;
 
-            Type gestClass = typeof(GestureRecognizer);
-            xAxisIncreasedEvent = gestClass.GetEvent("XaxisIncreased", bindingFlags);
-            xAxisDecreasedEvent = gestClass.GetEvent("XaxisDecreased", bindingFlags);
-            yAxisIncreasedEvent = gestClass.GetEvent("YaxisIncreased", bindingFlags);
-            yAxisDecreasedEvent = gestClass.GetEvent("YaxisDecreased", bindingFlags);
-
-            //// initializing right hand recognizer
-            //rightHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, "DoNothing");
-            //rightHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, "DoNothing");
-            //rightHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, "ChangeVelocity");
-            //rightHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, "ChangeVelocity");
-            
-            //// initializing left hand recognizer
-            //leftHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, "DoNothing");
-            //leftHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, "DoNothing");
-            //leftHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, "ChangeVelocity");
-            //leftHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, "ChangeVelocity");
+            leftHandSwipeDetector = new SwipeGestureDetector();
+            leftHandSwipeDetector.OnGestureDetected += OnLeftGestureDetected;
 
             ParseConfigs(@"c:\diploma\Kinesthesia\Kinesthesia\SupportingFiles\default.csv");
-
-            swipeDetector = new SwipeGestureDetector();
-            swipeDetector.OnGestureDetected += OnGestureDetected;
-
-            AddAllEventHandlers();
         }
         
-        void OnGestureDetected(string gesture, Point p)
+        void OnRightGestureDetected(string gesture, Point p)
         {
-            logBlock.Text += "\n" + gesture  +
+            logBlock.Text += "\n" + "RIGHT_HAND" + gesture  +
                              " X: " + lastPoint.X + " Y: " + lastPoint.Y;
             ScrollTheBox();
+
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+            string methodName = "DoNothing";
+            foreach (var configContainer in configurationList)
+            {
+                if (configContainer.JointType == JointType.HandRight && configContainer.EventName == gesture)
+                {
+                    methodName = configContainer.MethodName;
+                }
+            }
+
+            object[] args = new object[2];
+            args[0] = JointType.HandRight;
+            args[1] = lastPoint;
+            MethodInfo method = typeof (MainWindow).GetMethod(methodName, bindingFlags);
+            method.Invoke(this, args);
+        }
+
+        void OnLeftGestureDetected(string gesture, Point p)
+        {
+            logBlock.Text += "\n" + "LEFT_HAND" + gesture +
+                             " X: " + lastPoint.X + " Y: " + lastPoint.Y;
+            ScrollTheBox();
+
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+            string methodName = "DoNothing";
+            foreach (var configContainer in configurationList)
+            {
+                if (configContainer.JointType == JointType.HandLeft && configContainer.EventName == gesture)
+                {
+                    methodName = configContainer.MethodName;
+                }
+            }
+
+            object[] args = new object[2];
+            args[0] = JointType.HandLeft;
+            args[1] = lastPoint;
+            MethodInfo method = typeof(MainWindow).GetMethod(methodName, bindingFlags);
+            method.Invoke(this, args);
         }
 
         private void ParseConfigs(string path)
         {
             ConfigParser configParser = new ConfigParser();
             configurationList = configParser.ParseConfigs(path);
-            
-            ClearAllEventHandlers();
 
-            settingsLog.Text += "\n" + "Joint" + " " + "Threshold" + " " + "Event" + " " + "Method" + "\n \n";
+            settingsLog.Text = "";
             
             foreach (var configContainer in configurationList)
             {
-                settingsLog.Text += Convert.ToString(configContainer.JointType) + " " + configContainer.Threshold + " " +
-                                    configContainer.EventName + " " + configContainer.MethodName + "\n";
-                ScrollTheBox();
-
-                if (configContainer.JointType == JointType.HandLeft)
+                if (configContainer.ConfigType == "Calibration")
                 {
-                    leftHandRecognizer.Threshold = configContainer.Threshold;
-                    
-                    if (configContainer.EventName == "XaxisIncreased")
+                    settingsLog.Text += "\n" + Convert.ToString(configContainer.JointType) + "\n         " +
+                                        "min length = " + configContainer.SwipeMinimalLength + " " +
+                                        "max length = " + configContainer.SwipeMaximalLength + "\n         " +
+                                        "min height = " + configContainer.SwipeMinimalHeight + " " +
+                                        "max height = " + configContainer.SwipeMaximalHeight + "\n         " +
+                                        "min duration = " + configContainer.SwipeMinimalDuration + " " +
+                                        "max duration = " + configContainer.SwipeMaximalDuration + "\n";
+                    ScrollTheBox();
+
+                    if (configContainer.JointType == JointType.HandRight)
                     {
-                        leftHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                        rightHandSwipeDetector.SwipeMinimalLength = configContainer.SwipeMinimalLength;
+                        rightHandSwipeDetector.SwipeMaximalLength = configContainer.SwipeMaximalLength;
+                        rightHandSwipeDetector.SwipeMinimalHeight = configContainer.SwipeMinimalHeight;
+                        rightHandSwipeDetector.SwipeMaximalHeight = configContainer.SwipeMaximalHeight;
+                        rightHandSwipeDetector.SwipeMinimalDuration = configContainer.SwipeMinimalDuration;
+                        rightHandSwipeDetector.SwipeMaximalDuration = configContainer.SwipeMaximalDuration;
                     }
-                    else if(configContainer.EventName == "XaxisDecreased")
+                    else if (configContainer.JointType == JointType.HandLeft)
                     {
-                        leftHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, configContainer.MethodName);
-                    }
-                    else if (configContainer.EventName == "YaxisIncreased")
-                    {
-                        leftHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, configContainer.MethodName);
-                    }
-                    else if (configContainer.EventName == "YaxisDecreased")
-                    {
-                        leftHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, configContainer.MethodName);
+                        leftHandSwipeDetector.SwipeMinimalLength = configContainer.SwipeMinimalLength;
+                        leftHandSwipeDetector.SwipeMaximalLength = configContainer.SwipeMaximalLength;
+                        leftHandSwipeDetector.SwipeMinimalHeight = configContainer.SwipeMinimalHeight;
+                        leftHandSwipeDetector.SwipeMaximalHeight = configContainer.SwipeMaximalHeight;
+                        leftHandSwipeDetector.SwipeMinimalDuration = configContainer.SwipeMinimalDuration;
+                        leftHandSwipeDetector.SwipeMaximalDuration = configContainer.SwipeMaximalDuration;
                     }
                 }
-                else if (configContainer.JointType == JointType.HandRight)
+                else if (configContainer.ConfigType == "Event")
                 {
-                    rightHandRecognizer.Threshold = configContainer.Threshold;
-
-                    if (configContainer.EventName == "XaxisIncreased")
-                    {
-                        rightHandXAxisIncreasedEventHandler = Delegate.CreateDelegate(xAxisIncreasedEvent.EventHandlerType, this, configContainer.MethodName);
-                    }
-                    else if (configContainer.EventName == "XaxisDecreased")
-                    {
-                        rightHandXAxisDecreasedEventHandler = Delegate.CreateDelegate(xAxisDecreasedEvent.EventHandlerType, this, configContainer.MethodName);
-                    }
-                    else if (configContainer.EventName == "YaxisIncreased")
-                    {
-                        rightHandYAxisIncreasedEventHandler = Delegate.CreateDelegate(yAxisIncreasedEvent.EventHandlerType, this, configContainer.MethodName);
-                    }
-                    else if (configContainer.EventName == "YaxisDecreased")
-                    {
-                        rightHandYAxisDecreasedEventHandler = Delegate.CreateDelegate(yAxisDecreasedEvent.EventHandlerType, this, configContainer.MethodName);
-                    }
+                    settingsLog.Text += "\n" + Convert.ToString(configContainer.JointType) + " " +
+                                        configContainer.EventName + " " + configContainer.MethodName;
+                    ScrollTheBox();
                 }
             }
-
-            AddAllEventHandlers();
-        }
-
-        private void ClearAllEventHandlers()
-        {
-            xAxisIncreasedEvent.RemoveEventHandler(rightHandRecognizer, rightHandXAxisIncreasedEventHandler);
-            xAxisDecreasedEvent.RemoveEventHandler(rightHandRecognizer, rightHandXAxisDecreasedEventHandler);
-            yAxisIncreasedEvent.RemoveEventHandler(rightHandRecognizer, rightHandYAxisIncreasedEventHandler);
-            yAxisDecreasedEvent.RemoveEventHandler(rightHandRecognizer, rightHandYAxisDecreasedEventHandler);
-
-            xAxisIncreasedEvent.RemoveEventHandler(leftHandRecognizer, leftHandXAxisIncreasedEventHandler);
-            xAxisDecreasedEvent.RemoveEventHandler(leftHandRecognizer, leftHandXAxisDecreasedEventHandler);
-            yAxisIncreasedEvent.RemoveEventHandler(leftHandRecognizer, leftHandYAxisIncreasedEventHandler);
-            yAxisDecreasedEvent.RemoveEventHandler(leftHandRecognizer, leftHandYAxisDecreasedEventHandler);
-        }
-
-        private void AddAllEventHandlers()
-        {
-            xAxisIncreasedEvent.AddEventHandler(rightHandRecognizer, rightHandXAxisIncreasedEventHandler);
-            xAxisDecreasedEvent.AddEventHandler(rightHandRecognizer, rightHandXAxisDecreasedEventHandler);
-            yAxisIncreasedEvent.AddEventHandler(rightHandRecognizer, rightHandYAxisIncreasedEventHandler);
-            yAxisDecreasedEvent.AddEventHandler(rightHandRecognizer, rightHandYAxisDecreasedEventHandler);
-
-            xAxisIncreasedEvent.AddEventHandler(leftHandRecognizer, leftHandXAxisIncreasedEventHandler);
-            xAxisDecreasedEvent.AddEventHandler(leftHandRecognizer, leftHandXAxisDecreasedEventHandler);
-            yAxisIncreasedEvent.AddEventHandler(leftHandRecognizer, leftHandYAxisIncreasedEventHandler);
-            yAxisDecreasedEvent.AddEventHandler(leftHandRecognizer, leftHandYAxisDecreasedEventHandler);
         }
 
         private void ParseCSVAtPath(string path)
@@ -243,51 +200,47 @@ namespace Kinesthesia
             }
         }
 
-        private void ChangeVelocity(object sender, EventArgs e)
+        private void ChangeVelocity(JointType joint, Point point)
         {
-            GestureEventArgs ge = (GestureEventArgs)e;
-
-            int velocity = ValueToVelocity(480, ge.point.Y);
+            int velocity = ValueToVelocity(480, point.Y);
             if (velocity > 127) velocity = 127;
 
-            if(ge.joint == JointType.HandLeft)
+            if(joint == JointType.HandLeft)
             {
                 track2.Velocity = velocity;
-                logBlock.Text += "\nTRACK " + track2.Track.TrackNumber + " VELOCITY " + velocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+                logBlock.Text += "\nTRACK " + track2.Track.TrackNumber + " VELOCITY " + velocity + " X: " + point.X + " Y: " + point.Y;
                 ScrollTheBox();
             }
             else
             {
                 track3.Velocity = velocity;
-                logBlock.Text += "\nTRACK " + track3.Track.TrackNumber + " VELOCITY " + velocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+                logBlock.Text += "\nTRACK " + track3.Track.TrackNumber + " VELOCITY " + velocity + " X: " + point.X + " Y: " + point.Y;
                 ScrollTheBox();
             }
         }
 
 
-        private int ValueToVelocity (int scope, float value)
+        private int ValueToVelocity (int scope, double value)
         {
             return Convert.ToInt32(127*value/scope);
         }
-        
-        private void DoNothing (object sender, EventArgs e)
+
+        private void DoNothing(JointType joint, Point point)
         {
             
         }
 
-        private void SendNote (object sender, EventArgs e)
+        private void SendNote(JointType joint, Point point)
         {
-            GestureEventArgs ge = (GestureEventArgs)e;
-
             int octave = 640/7;
             int note = octave/7;
             int velocity = 480/127;
 
             midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
 
-            currOctave = (int) ge.point.X/octave;
-            currNote = (int) ge.point.X/note - currOctave*7;
-            currVelocity = (int) ge.point.Y/velocity;
+            currOctave = (int) point.X/octave;
+            currNote = (int) point.X/note - currOctave*7;
+            currVelocity = (int) point.Y/velocity;
 
             if (currOctave > 7) currOctave = 7;
             if (currNote > 7) currNote = 7;
@@ -295,30 +248,25 @@ namespace Kinesthesia
 
             midMan.SendNoteOnMessage(notes[currNote], currOctave, currVelocity);
 
-            logBlock.Text += "\nNOTE " + notes[currNote] + " OF OCTAVE " + currOctave + " VELOCITY " + currVelocity + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            logBlock.Text += "\nNOTE " + notes[currNote] + " OF OCTAVE " + currOctave + " VELOCITY " + currVelocity + " X: " + point.X + " Y: " + point.Y;
             ScrollTheBox();
         }
 
-        private void BendPitch (object sender, EventArgs e)
+        private void BendPitch(JointType joint, Point point)
         {
-            GestureEventArgs ge = (GestureEventArgs) e;
-            
             int pitchPart = 16384/480;
-            midMan.SendPitchBend(pitchPart*(int)ge.point.Y);
+            midMan.SendPitchBend(pitchPart*(int)point.Y);
 
-            logBlock.Text += "\nPITCH BEND " + pitchPart * (int)ge.point.Y + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            logBlock.Text += "\nPITCH BEND " + pitchPart * (int)point.Y + " X: " + point.X + " Y: " + point.Y;
             ScrollTheBox();
         }
 
-        private void ChangeVolume (object sender, EventArgs e)
+        private void ChangeVolume(JointType joint, Point point)
         {
-            GestureEventArgs ge = (GestureEventArgs)e;
-            
             int volumePart = 640/127;
-            int vol = (int)ge.point.X/volumePart;
+            int vol = (int)point.X/volumePart;
             
-
-            logBlock.Text += "\nCHANGE VOLUME " + vol + " " + leftHandRecognizer.currPointNumber() + " X: " + ge.point.X + " Y: " + ge.point.Y;
+            logBlock.Text += "\nCHANGE VOLUME " + vol + " X: " + point.X + " Y: " + point.Y;
             ScrollTheBox();
         }
 
@@ -453,7 +401,9 @@ namespace Kinesthesia
                     //leftHandRecognizer.AddCoordinate(lpoint);
                     //rightHandRecognizer.AddCoordinate(rpoint);
                     lastPoint = rightPoint;
-                    swipeDetector.Add(right.Position, sensor);
+                    //swipeDetector.Add(right.Position, sensor);
+                    rightHandSwipeDetector.Add(right.Position, sensor);
+                    leftHandSwipeDetector.Add(left.Position, sensor);
 
                     //logBlock.Text += "\n NEW POINT " + leftHandRecognizer.currPointNumber() + " X: " + point.X + " Y: " + point.Y;
                 }

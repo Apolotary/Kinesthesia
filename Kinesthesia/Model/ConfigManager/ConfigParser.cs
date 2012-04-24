@@ -29,12 +29,54 @@ namespace Kinesthesia.Model.ConfigManager
 
             for (int i = 0; i < parsedData.Count(); ++i )
             {
-                string joint = parsedData[i][0];
-                int threshold = Convert.ToInt32(parsedData[i][1]);
-                string eventName = parsedData[i][2];
-                string methodName = parsedData[i][3];
+                if (parsedData[i].Count() > 3)
+                {
+                    string joint = parsedData[i][0];
+                    double swipeMinimalLength = Convert.ToDouble(parsedData[i][1]);
+                    double swipeMaximalLength = Convert.ToDouble(parsedData[i][2]);
+                    double swipeMinimalHeight = Convert.ToDouble(parsedData[i][3]);
+                    double swipeMaximalHeight = Convert.ToDouble(parsedData[i][4]);
+                    int swipeMinimalDuration = Convert.ToInt32(parsedData[i][5]);
+                    int swipeMaximalDuration = Convert.ToInt32(parsedData[i][6]);
+                    string eventName = "";
+                    string methodName = "";
+                    string configType = "Calibration";
 
-                configList.Add(new ConfigContainer(ConvertJointNameToType(joint), threshold, eventName, methodName));
+                    configList.Add(new ConfigContainer(ConvertJointNameToType(joint),
+                                                       swipeMinimalLength,
+                                                       swipeMaximalLength,
+                                                       swipeMinimalHeight,
+                                                       swipeMaximalHeight,
+                                                       swipeMinimalDuration,
+                                                       swipeMaximalDuration,
+                                                       eventName,
+                                                       methodName,
+                                                       configType));
+                }
+                else
+                {
+                    string joint = parsedData[i][0];
+                    double swipeMinimalLength = 0.0;
+                    double swipeMaximalLength = 0.0;
+                    double swipeMinimalHeight = 0.0;
+                    double swipeMaximalHeight = 0.0;
+                    int swipeMinimalDuration = 0;
+                    int swipeMaximalDuration = 0;
+                    string eventName = parsedData[i][1];
+                    string methodName = parsedData[i][2];
+                    string configType = "Event";
+
+                    configList.Add(new ConfigContainer(ConvertJointNameToType(joint),
+                                                       swipeMinimalLength,
+                                                       swipeMaximalLength,
+                                                       swipeMinimalHeight,
+                                                       swipeMaximalHeight,
+                                                       swipeMinimalDuration,
+                                                       swipeMaximalDuration,
+                                                       eventName,
+                                                       methodName,
+                                                       configType));
+                }
             }
 
             return configList;

@@ -1,8 +1,10 @@
-﻿HandRight, 10, XaxisIncreased, SendNote
-HandRight, 10, XaxisDecreased, SendNote
-HandRight, 10, YaxisIncreased, SendNote
-HandRight, 10, YaxisDecreased, SendNote
-HandLeft, 10, XaxisIncreased, ChangeVolume
-HandLeft, 10, XaxisDecreased, ChangeVolume
-HandLeft, 10, YaxisIncreased, BendPitch
-HandLeft, 10, YaxisDecreased, BendPitch
+﻿HandRight, 0.4, 0.2, 0.1, 0.2, 250, 1500
+HandLeft,  0.4, 0.2, 0.1, 0.2, 250, 1500
+HandRight, SwipeToRight, SendNote
+HandRight, SwipeToLeft,  SendNote
+HandRight, SwipeUp,      SendNote
+HandRight, SwipeDown,    SendNote
+HandLeft,  SwipeToRight, ChangeVolume
+HandLeft,  SwipeToLeft,  ChangeVolume
+HandLeft,  SwipeUp,      BendPitch
+HandLeft,  SwipeDown,    BendPitch
