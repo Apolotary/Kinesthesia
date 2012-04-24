@@ -1,0 +1,2 @@
+C:\diploma\Kinesthesia\Kinesthesia\bin\Debug\piano.csv
+C:\diploma\Kinesthesia\Kinesthesia\SupportingFiles\123.csv

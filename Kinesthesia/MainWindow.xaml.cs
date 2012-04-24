@@ -109,7 +109,7 @@ namespace Kinesthesia
             leftHandSwipeDetector = new SwipeGestureDetector();
             leftHandSwipeDetector.OnGestureDetected += OnLeftGestureDetected;
 
-            voiceCommander = new VoiceCommander("play", "stop", "track", "load", "save", "file", "refresh", "restore");
+            voiceCommander = new VoiceCommander("play", "stop", "swipe", "load", "save", "file", "reload", "default");
             voiceCommander.OrderDetected += voiceCommander_OrderDetected;
             
             File.Copy(@"..\..\SupportingFiles\default.csv", Environment.CurrentDirectory + @"\default.csv", true);
@@ -137,7 +137,7 @@ namespace Kinesthesia
                     action = new Action(PlayTrack);
                     mainDispatcher.Invoke(action);
                     break;
-                case "track":
+                case "swipe":
                     action = new Action(StartTracking);
                     mainDispatcher.Invoke(action);
                     break;
@@ -153,11 +153,11 @@ namespace Kinesthesia
                     action = new Action(QuickLoadLastMIDIFile);
                     mainDispatcher.Invoke(action);
                     break;
-                case "refresh":
+                case "reload":
                     action = new Action(RefreshSettingsLog);
                     mainDispatcher.Invoke(action);
                     break;
-                case "restore":
+                case "default":
                     action = new Action(RestoreDefaultSettings);
                     mainDispatcher.Invoke(action);
                     break;
