@@ -2,6 +2,7 @@
 Calibration, HandLeft,  0.4, 0.2, 0.1, 0.2, 250, 1500
 Scale, C, C#, D, D#, E, F, F#, G, G#, A, A#, B
 Note, 60, Horizontal
+Velocity, 0, 127
 Event, HandRight, SwipeToRight, SendNote
 Event, HandRight, SwipeToLeft,  SendNote
 Event, HandRight, SwipeUp,      SendNote

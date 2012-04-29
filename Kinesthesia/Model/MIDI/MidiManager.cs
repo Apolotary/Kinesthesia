@@ -7,9 +7,8 @@ using Midi;
 namespace Kinesthesia.Model.MIDI
 {
     /// <summary>
-    /// this class is managing the note sending from 
-    /// interpreter class to MIDI-device
-    /// It's implemented as singletone
+    /// This class is managing everything that is related to MIDI-messages
+    /// It is implemented as a singleton to avoid multiple message sending
     /// </summary>
     class MidiManager
     {
@@ -55,6 +54,23 @@ namespace Kinesthesia.Model.MIDI
             }
         }
 
+        public List<string> GetTheListOfMidiDevices()
+        {
+            List<string> devices = new List<string>();
+
+            foreach (InputDevice device in InputDevice.InstalledDevices)
+            {
+                devices.Add(device.Name);
+            }
+
+            return devices;
+        }
+
+        public void ChangeMidiDevice(int deviceNumber)
+        {
+            _outputDevice = OutputDevice.InstalledDevices[deviceNumber];
+        }
+        
         /// <summary>
         /// sending note on message to MIDI port
         /// </summary>
@@ -68,7 +84,7 @@ namespace Kinesthesia.Model.MIDI
             Pitch pt = theNote.PitchInOctave(octave);
             _outputDevice.SendNoteOn(Channel.Channel1, pt, velocity);
         }
-
+        
         /// <summary>
         /// send raw note on message
         /// </summary>

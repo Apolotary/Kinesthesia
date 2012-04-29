@@ -7,85 +7,99 @@ using Microsoft.Kinect;
 namespace Kinesthesia.Model.ConfigManager
 {
     /// <summary>
-    /// Container for the current configuration
+    /// Container for the current configuration of application
     /// </summary>
     class ConfigContainer
     {
         /// <summary>
-        /// name of the joint which triggers the event
+        /// Name of the joint which triggers the event
         /// </summary>
         private JointType _jointType;
 
         /// <summary>
-        /// minimal value for length of swipe to trigger gesture
+        /// Minimal value for length of swipe to trigger gesture
         /// </summary>
         private double _swipeMinimalLength;
 
         /// <summary>
-        /// maximal value for length of swipe to trigger gesture
+        /// Maximal value for length of swipe to trigger gesture
         /// </summary>
         private double _swipeMaximalLength;
 
         /// <summary>
-        /// minimal value for heigth of swipe to trigger gesture
+        /// Minimal value for heigth of swipe to trigger gesture
         /// </summary>
         private double _swipeMinimalHeight;
 
         /// <summary>
-        /// maximal value for length of swipe to trigger gesture
+        /// Maximal value for length of swipe to trigger gesture
         /// </summary>
         private double _swipeMaximalHeight;
 
         /// <summary>
-        /// minimal value for duration of swipe in miliseconds to trigger gesture
+        /// Minimal value for duration of swipe in miliseconds to trigger gesture
         /// </summary>
         private int _swipeMinimalDuration;
 
         /// <summary>
-        /// maximal value for duration of swipe in miliseconds to trigger gesture
+        /// Maximal value for duration of swipe in miliseconds to trigger gesture
         /// </summary>
         private int _swipeMaximalDuration;
         
         /// <summary>
-        /// event name which triggers the method
+        /// Rvent name which triggers the method
         /// </summary>
         private string _eventName;
 
         /// <summary>
-        /// method name that will be triggered
+        /// Method name that will be triggered
         /// </summary>
         private string _methodName;
 
         /// <summary>
-        /// list with notes for scale which will be used to pick notes
+        /// List with notes for scale which will be used to pick notes
         /// </summary>
         private List<string> _scale;
         
         /// <summary>
-        /// quantity of notes that will be used for picking
+        /// Quantity of notes that will be used for MIDI-messages
         /// MIDI supports up to 127 notes
         /// </summary>
         private int _quantityOfNotes;
 
         /// <summary>
-        /// determines the orientation for MIDI notes on screen
+        /// Determines the orientation for MIDI notes on screen
         /// </summary>
         private bool _isHorizontal;
 
         /// <summary>
-        /// keyword for voice command
+        /// Keyword for voice command
         /// </summary>
         private string _keyWord;
 
         /// <summary>
-        /// method for voice command
+        /// Method for voice command
         /// </summary>
         private string _voiceCommand;
+
+        /// <summary>
+        /// Minimal velocity value, from 0 to 127
+        /// </summary>
+        private int _minVelocity;
+
+        /// <summary>
+        /// Maximal velocity value, from 0 to 127
+        /// </summary>
+        private int _maxVelocity;
         
         /// <summary>
-        /// type of config container
-        /// it can be "Calibration" -- for calibrating gesture sensitivity
-        /// or "Event" -- for binding methods and events
+        /// Type of config container:
+        /// "Calibration" -- for calibrating gesture sensitivity
+        /// "Scale" -- for array of notes which will be used within one scale
+        /// "Note" -- for quantity of notes and their orientation
+        /// "Velocity" -- minimal and maximal velocity values for ChangeVelocity methods
+        /// "Event" -- for binding methods and events
+        /// "Voice" -- keyword and method for voice command control
         /// </summary>
         private string _configType;
 
@@ -162,6 +176,16 @@ namespace Kinesthesia.Model.ConfigManager
             get { return _voiceCommand; }
             set { _voiceCommand = value; }
         }
+        public int MinVelocity
+        {
+            get { return _minVelocity; }
+            set { _minVelocity = value; }
+        }
+        public int MaxVelocity
+        {
+            get { return _maxVelocity; }
+            set { _maxVelocity = value; }
+        }
         public string ConfigType
         {
             get { return _configType; }
@@ -187,10 +211,13 @@ namespace Kinesthesia.Model.ConfigManager
             _isHorizontal = true;
             _keyWord = "";
             _voiceCommand = "";
+            _minVelocity = 0;
+            _maxVelocity = 127;
         }
 
+
         /// <summary>
-        /// constructor with params
+        /// constructor with parameters
         /// </summary>
         /// <param name="joint">type of the joint which triggers the event</param>
         /// <param name="swipeMinimalLength">minimal value for length of swipe to trigger gesture</param>
@@ -208,6 +235,8 @@ namespace Kinesthesia.Model.ConfigManager
         /// <param name="isHorizontal">determines the orientation for MIDI notes on screen</param>
         /// <param name="keyWord">keyword for voice command</param>
         /// <param name="voiceCommand">method for voice command</param>
+        /// <param name="minVelocity">minimal velocity value</param>
+        /// <param name="maxVelocity">maximal velocity value</param>
         public ConfigContainer(JointType joint,
                                double swipeMinimalLength,
                                double swipeMaximalLength,
@@ -222,7 +251,9 @@ namespace Kinesthesia.Model.ConfigManager
                                int quantityOfNotes, 
                                bool isHorizontal, 
                                string keyWord,
-                               string voiceCommand)
+                               string voiceCommand,
+                               int minVelocity,
+                               int maxVelocity)
         {
             _jointType = joint;
             _swipeMinimalLength = swipeMinimalLength;
@@ -239,6 +270,8 @@ namespace Kinesthesia.Model.ConfigManager
             _isHorizontal = isHorizontal;
             _keyWord = keyWord;
             _voiceCommand = voiceCommand;
+            _minVelocity = minVelocity;
+            _maxVelocity = maxVelocity;
         }
     }
 }

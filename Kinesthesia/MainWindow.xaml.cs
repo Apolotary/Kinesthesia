@@ -14,11 +14,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using Kinesthesia.UI_Controllers;
 using Microsoft.Kinect;
+using Microsoft.Samples.Kinect.WpfViewers;
 using Kinesthesia.Model.MIDI;
-using Kinesthesia.Model.GestureRecognition;
-//using Coding4Fun.Kinect.Wpf;
 using System.Reflection;
 using Microsoft.Win32;
 using Kinesthesia.Model.ConfigManager;
@@ -67,6 +65,10 @@ namespace Kinesthesia
         private int currNote = 0;
         private int currOctave = 5;
         private int currVelocity = 80;
+        private int minVelocity = 0;
+        private int maxVelocity = 0;
+        private bool isHorizontal;
+        private int quantityOfNotes;
 
         private List<Track> trackList;
         private TrackPlayer track1;
@@ -76,16 +78,27 @@ namespace Kinesthesia
         MidiPlayer midiPl = new MidiPlayer();
 
         private KinectSensor sensor;
-        private Point lastPoint;
+        private Point lastRPoint;
+        private Point lastLPoint;
 
         #region window methods
+
+        /// <summary>
+        /// default window loading event method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
             CreateAndInitializeDefaultGestureRecognizers();
         }
 
-
+        /// <summary>
+        /// default window closing event method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             closing = true;
@@ -116,6 +129,8 @@ namespace Kinesthesia
 
             voiceCommander = new VoiceCommander(keyWords);
             voiceCommander.OrderDetected += voiceCommander_OrderDetected;
+
+            devicesComboBox.ItemsSource = midMan.GetTheListOfMidiDevices();
             
             System.IO.StreamReader fileToRead = new StreamReader(Environment.CurrentDirectory + @"\cache.txt");
             lastConfigFilePath = fileToRead.ReadLine();
@@ -172,8 +187,8 @@ namespace Kinesthesia
 
         void OnRightGestureDetected(string gesture, Point p)
         {
-            logBlock.Text += "\n" + "RIGHT_HAND" + gesture  +
-                             " X: " + lastPoint.X + " Y: " + lastPoint.Y;
+            logBlock.Text += "\n" + "RIGHT_HAND " + gesture  +
+                             " X: " + lastRPoint.X + " Y: " + lastRPoint.Y;
             ScrollTheBox();
 
             var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
@@ -189,15 +204,15 @@ namespace Kinesthesia
 
             object[] args = new object[2];
             args[0] = JointType.HandRight;
-            args[1] = lastPoint;
+            args[1] = lastRPoint;
             MethodInfo method = typeof (MainWindow).GetMethod(methodName, bindingFlags);
             method.Invoke(this, args);
         }
 
         void OnLeftGestureDetected(string gesture, Point p)
         {
-            logBlock.Text += "\n" + "LEFT_HAND" + gesture +
-                             " X: " + lastPoint.X + " Y: " + lastPoint.Y;
+            logBlock.Text += "\n" + "LEFT_HAND " + gesture +
+                             " X: " + lastLPoint.X + " Y: " + lastLPoint.Y;
             ScrollTheBox();
 
             var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
@@ -213,7 +228,7 @@ namespace Kinesthesia
 
             object[] args = new object[2];
             args[0] = JointType.HandLeft;
-            args[1] = lastPoint;
+            args[1] = lastLPoint;
             MethodInfo method = typeof(MainWindow).GetMethod(methodName, bindingFlags);
             method.Invoke(this, args);
         }
@@ -223,7 +238,8 @@ namespace Kinesthesia
         private void ChangeVelocity(JointType joint, Point point)
         {
             int velocity = ValueToVelocity(480, point.Y);
-            if (velocity > 127) velocity = 127;
+            if (velocity > maxVelocity) velocity = maxVelocity;
+            if (velocity < minVelocity) velocity = minVelocity;
 
             if(joint == JointType.HandLeft)
             {
@@ -241,7 +257,7 @@ namespace Kinesthesia
         
         private int ValueToVelocity (int scope, double value)
         {
-            return Convert.ToInt32(127*value/scope);
+            return Convert.ToInt32((maxVelocity - minVelocity)*value/scope);
         }
 
         private void DoNothing(JointType joint, Point point)
@@ -251,19 +267,9 @@ namespace Kinesthesia
 
         private void SendNote(JointType joint, Point point)
         {
-            int octave = 640/7;
-            int note = octave/7;
-            int velocity = 480/127;
-
             midMan.SendNoteOffMessage(notes[currNote], currOctave, currVelocity);
 
-            currOctave = (int) point.X/octave;
-            currNote = (int) point.X/note - currOctave*7;
-            currVelocity = (int) point.Y/velocity;
-
-            if (currOctave > 7) currOctave = 7;
-            if (currNote > 7) currNote = 7;
-            if (currVelocity > 127) currVelocity = 127;
+            CalculateNote(point);
 
             midMan.SendNoteOnMessage(notes[currNote], currOctave, currVelocity);
 
@@ -288,6 +294,39 @@ namespace Kinesthesia
             logBlock.Text += "\nCHANGE VOLUME " + vol + " X: " + point.X + " Y: " + point.Y;
             ScrollTheBox();
         }
+
+        #region calculating notes / velocity methods
+
+        private void CalculateNote(Point point)
+        {
+            int octave;
+            int note;
+            int velocity;
+            int quantityOfOctaves = quantityOfNotes/notes.Count();
+
+            if (isHorizontal)
+            {
+                note = 640 / quantityOfNotes;
+                octave = 640 / quantityOfOctaves;
+                velocity = 480 / 127;
+            }
+            else
+            {
+                note = 480 / quantityOfNotes;
+                octave = 480 / quantityOfOctaves;
+                velocity = 640 / 127;
+            }
+            
+            currOctave = (int)point.X / octave;
+            currNote = (int)point.X / note - currOctave * notes.Count();
+            currVelocity = (int)point.Y / velocity;
+
+            if (currOctave > quantityOfOctaves) currOctave = quantityOfOctaves;
+            if (currNote >= notes.Count()) currNote = notes.Count()-1;
+            if (currVelocity > 127) currVelocity = 127;
+        }
+
+        #endregion
 
         #endregion
 
@@ -407,24 +446,11 @@ namespace Kinesthesia
 
                     if (shouldTrack)
                     {
-                        SkeletonPoint lpoint = new SkeletonPoint();
-                        lpoint.X = (float)leftPoint.X;
-                        lpoint.Y = (float)leftPoint.Y;
-                        lpoint.Z = 0;
-
-                        SkeletonPoint rpoint = new SkeletonPoint();
-                        rpoint.X = (float)rightPoint.X;
-                        rpoint.Y = (float)rightPoint.Y;
-                        rpoint.Z = 0;
-
-                        //leftHandRecognizer.AddCoordinate(lpoint);
-                        //rightHandRecognizer.AddCoordinate(rpoint);
-                        lastPoint = rightPoint;
-                        //swipeDetector.Add(right.Position, sensor);
+                        lastRPoint = rightPoint;
+                        lastLPoint = leftPoint;
+                        
                         rightHandSwipeDetector.Add(right.Position, sensor);
                         leftHandSwipeDetector.Add(left.Position, sensor);
-
-                        //logBlock.Text += "\n NEW POINT " + leftHandRecognizer.currPointNumber() + " X: " + point.X + " Y: " + point.Y;
                     }
                 }
             }
@@ -534,7 +560,7 @@ namespace Kinesthesia
                 ConfigContainer configContainer = configurationList[i];
                 if (configContainer.ConfigType == "Event")
                 {
-                    settingsLog.Text += Convert.ToString(configContainer.JointType) + ", " +
+                    settingsLog.Text += "Event, " + Convert.ToString(configContainer.JointType) + ", " +
                                         configContainer.EventName + ", " + configContainer.MethodName;
                     ScrollTheBox();
                     if (i != configurationList.Count() - 1)
@@ -585,6 +611,9 @@ namespace Kinesthesia
                         settingsLog.Text += "\n";
                     }
 
+                    isHorizontal = configContainer.IsHorizontal;
+                    quantityOfNotes = configContainer.QuantityOfNotes;
+
                     ScrollTheBox();
                 }
                 else if (configContainer.ConfigType == "Voice")
@@ -594,6 +623,20 @@ namespace Kinesthesia
                     keys.Add(configContainer.KeyWord);
 
                     voiceCommands.Add(configContainer.KeyWord, configContainer.VoiceCommand);
+
+                    if (i != configurationList.Count() - 1)
+                    {
+                        settingsLog.Text += "\n";
+                    }
+
+                    ScrollTheBox();
+                }
+                else if (configContainer.ConfigType == "Velocity")
+                {
+                    settingsLog.Text += "Velocity" + ", " + configContainer.MinVelocity + ", " + configContainer.MaxVelocity;
+
+                    minVelocity = configContainer.MinVelocity;
+                    maxVelocity = configContainer.MaxVelocity;
 
                     if (i != configurationList.Count() - 1)
                     {
@@ -727,14 +770,14 @@ namespace Kinesthesia
             {
                 string lines = string.Empty;
 
-                lines += "HandRight" +
+                lines += "Calibration, " + "HandRight" +
                          ", " + string.Format("{0:0.00}", rightHandSwipeDetector.SwipeMinimalLength) +
                          ", " + string.Format("{0:0.00}", rightHandSwipeDetector.SwipeMaximalLength) +
                          ", " + string.Format("{0:0.00}", rightHandSwipeDetector.SwipeMinimalHeight) +
                          ", " + string.Format("{0:0.00}", rightHandSwipeDetector.SwipeMaximalHeight) +
                          ", " + rightHandSwipeDetector.SwipeMinimalDuration +
                          ", " + rightHandSwipeDetector.SwipeMaximalDuration + "\n";
-                lines += "HandLeft" +
+                lines += "Calibration, " + "HandLeft" +
                          ", " + string.Format("{0:0.00}", leftHandSwipeDetector.SwipeMinimalLength) +
                          ", " + string.Format("{0:0.00}", leftHandSwipeDetector.SwipeMaximalLength) +
                          ", " + string.Format("{0:0.00}", leftHandSwipeDetector.SwipeMinimalHeight) +
