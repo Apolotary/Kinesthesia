@@ -57,6 +57,32 @@ namespace Kinesthesia.Model.ConfigManager
         private string _methodName;
 
         /// <summary>
+        /// list with notes for scale which will be used to pick notes
+        /// </summary>
+        private List<string> _scale;
+        
+        /// <summary>
+        /// quantity of notes that will be used for picking
+        /// MIDI supports up to 127 notes
+        /// </summary>
+        private int _quantityOfNotes;
+
+        /// <summary>
+        /// determines the orientation for MIDI notes on screen
+        /// </summary>
+        private bool _isHorizontal;
+
+        /// <summary>
+        /// keyword for voice command
+        /// </summary>
+        private string _keyWord;
+
+        /// <summary>
+        /// method for voice command
+        /// </summary>
+        private string _voiceCommand;
+        
+        /// <summary>
         /// type of config container
         /// it can be "Calibration" -- for calibrating gesture sensitivity
         /// or "Event" -- for binding methods and events
@@ -111,6 +137,31 @@ namespace Kinesthesia.Model.ConfigManager
             get { return _methodName; }
             set { _methodName = value; }
         }
+        public List<string> Scale
+        {
+            get { return _scale; }
+            set { _scale = value; }
+        }
+        public int QuantityOfNotes
+        {
+            get { return _quantityOfNotes; }
+            set { _quantityOfNotes = value; }
+        }
+        public bool IsHorizontal
+        {
+            get { return _isHorizontal; }
+            set { _isHorizontal = value; }
+        }
+        public string KeyWord
+        {
+            get { return _keyWord; }
+            set { _keyWord = value; }
+        }
+        public string VoiceCommand
+        {
+            get { return _voiceCommand; }
+            set { _voiceCommand = value; }
+        }
         public string ConfigType
         {
             get { return _configType; }
@@ -131,6 +182,11 @@ namespace Kinesthesia.Model.ConfigManager
             _eventName = "";
             _methodName = "";
             _configType = "Calibration";
+            _scale = new List<string>();
+            _quantityOfNotes = 0;
+            _isHorizontal = true;
+            _keyWord = "";
+            _voiceCommand = "";
         }
 
         /// <summary>
@@ -146,6 +202,12 @@ namespace Kinesthesia.Model.ConfigManager
         /// <param name="eventName">event name which triggers the method</param>
         /// <param name="methodName">method name that will be triggered</param>
         /// <param name="configType">type of config container</param>
+        /// <param name="scale">list with notes for scale which will be used to pick notes</param>
+        /// <param name="quantityOfNotes">quantity of notes that will be used for picking
+        /// MIDI supports up to 127 notes</param>
+        /// <param name="isHorizontal">determines the orientation for MIDI notes on screen</param>
+        /// <param name="keyWord">keyword for voice command</param>
+        /// <param name="voiceCommand">method for voice command</param>
         public ConfigContainer(JointType joint,
                                double swipeMinimalLength,
                                double swipeMaximalLength,
@@ -155,7 +217,12 @@ namespace Kinesthesia.Model.ConfigManager
                                int swipeMaximalDuration,
                                string eventName, 
                                string methodName,
-                               string configType)
+                               string configType,
+                               List<string> scale,
+                               int quantityOfNotes, 
+                               bool isHorizontal, 
+                               string keyWord,
+                               string voiceCommand)
         {
             _jointType = joint;
             _swipeMinimalLength = swipeMinimalLength;
@@ -167,6 +234,11 @@ namespace Kinesthesia.Model.ConfigManager
             _eventName = eventName;
             _methodName = methodName;
             _configType = configType;
+            _scale = scale;
+            _quantityOfNotes = quantityOfNotes;
+            _isHorizontal = isHorizontal;
+            _keyWord = keyWord;
+            _voiceCommand = voiceCommand;
         }
     }
 }

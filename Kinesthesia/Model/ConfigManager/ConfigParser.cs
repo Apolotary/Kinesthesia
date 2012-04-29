@@ -16,7 +16,7 @@ namespace Kinesthesia.Model.ConfigManager
     class ConfigParser
     {
         private List<ConfigContainer> configList;
-
+        
         /// <summary>
         /// parsing configuration CSV file at given path
         /// </summary>
@@ -29,18 +29,23 @@ namespace Kinesthesia.Model.ConfigManager
 
             for (int i = 0; i < parsedData.Count(); ++i )
             {
-                if (parsedData[i].Count() > 3)
+                if (parsedData[i][0] == "Calibration")
                 {
-                    string joint = parsedData[i][0];
-                    double swipeMinimalLength = Convert.ToDouble(parsedData[i][1]);
-                    double swipeMaximalLength = Convert.ToDouble(parsedData[i][2]);
-                    double swipeMinimalHeight = Convert.ToDouble(parsedData[i][3]);
-                    double swipeMaximalHeight = Convert.ToDouble(parsedData[i][4]);
-                    int swipeMinimalDuration = Convert.ToInt32(parsedData[i][5]);
-                    int swipeMaximalDuration = Convert.ToInt32(parsedData[i][6]);
+                    string joint = parsedData[i][1];
+                    double swipeMinimalLength = Convert.ToDouble(parsedData[i][2]);
+                    double swipeMaximalLength = Convert.ToDouble(parsedData[i][3]);
+                    double swipeMinimalHeight = Convert.ToDouble(parsedData[i][4]);
+                    double swipeMaximalHeight = Convert.ToDouble(parsedData[i][5]);
+                    int swipeMinimalDuration = Convert.ToInt32(parsedData[i][6]);
+                    int swipeMaximalDuration = Convert.ToInt32(parsedData[i][7]);
                     string eventName = "";
                     string methodName = "";
                     string configType = "Calibration";
+                    List<string> scale = new List<string>();
+                    int quantityOfNotes = 0;
+                    bool isHorizontal = false;
+                    string keyWord = "";
+                    string voiceCommand = "";
 
                     configList.Add(new ConfigContainer(ConvertJointNameToType(joint),
                                                        swipeMinimalLength,
@@ -51,20 +56,35 @@ namespace Kinesthesia.Model.ConfigManager
                                                        swipeMaximalDuration,
                                                        eventName,
                                                        methodName,
-                                                       configType));
+                                                       configType,
+                                                       scale,
+                                                       quantityOfNotes,
+                                                       isHorizontal,
+                                                       keyWord,
+                                                       voiceCommand));
                 }
-                else
+                else if (parsedData[i][0] == "Scale")
                 {
-                    string joint = parsedData[i][0];
+                    string joint = "";
                     double swipeMinimalLength = 0.0;
                     double swipeMaximalLength = 0.0;
                     double swipeMinimalHeight = 0.0;
                     double swipeMaximalHeight = 0.0;
                     int swipeMinimalDuration = 0;
                     int swipeMaximalDuration = 0;
-                    string eventName = parsedData[i][1];
-                    string methodName = parsedData[i][2];
-                    string configType = "Event";
+                    string eventName = "";
+                    string methodName = "";
+                    string configType = "Scale";
+                    List<string> scale = new List<string>();
+                    int quantityOfNotes = 0;
+                    bool isHorizontal = false;
+                    string keyWord = "";
+                    string voiceCommand = "";
+
+                    for (int k = 1; k < parsedData[i].Count(); k++ )
+                    {
+                        scale.Add(parsedData[i][k]);
+                    }
 
                     configList.Add(new ConfigContainer(ConvertJointNameToType(joint),
                                                        swipeMinimalLength,
@@ -75,7 +95,118 @@ namespace Kinesthesia.Model.ConfigManager
                                                        swipeMaximalDuration,
                                                        eventName,
                                                        methodName,
-                                                       configType));
+                                                       configType,
+                                                       scale,
+                                                       quantityOfNotes,
+                                                       isHorizontal,
+                                                       keyWord,
+                                                       voiceCommand));
+                }
+                else if (parsedData[i][0] == "Note")
+                {
+                    string joint = "";
+                    double swipeMinimalLength = 0.0;
+                    double swipeMaximalLength = 0.0;
+                    double swipeMinimalHeight = 0.0;
+                    double swipeMaximalHeight = 0.0;
+                    int swipeMinimalDuration = 0;
+                    int swipeMaximalDuration = 0;
+                    string eventName = "";
+                    string methodName = "";
+                    string configType = "Note";
+                    List<string> scale = new List<string>();
+                    int quantityOfNotes = Convert.ToInt32(parsedData[i][1]);
+                    bool isHorizontal = false;
+                    if (parsedData[i][2] == "Horizontal")
+                    {
+                        isHorizontal = true;
+                    }
+                    string keyWord = "";
+                    string voiceCommand = "";
+
+                    configList.Add(new ConfigContainer(ConvertJointNameToType(joint),
+                                                       swipeMinimalLength,
+                                                       swipeMaximalLength,
+                                                       swipeMinimalHeight,
+                                                       swipeMaximalHeight,
+                                                       swipeMinimalDuration,
+                                                       swipeMaximalDuration,
+                                                       eventName,
+                                                       methodName,
+                                                       configType,
+                                                       scale,
+                                                       quantityOfNotes,
+                                                       isHorizontal,
+                                                       keyWord,
+                                                       voiceCommand));
+                }
+                else if (parsedData[i][0] == "Voice")
+                {
+                    string joint = "";
+                    double swipeMinimalLength = 0.0;
+                    double swipeMaximalLength = 0.0;
+                    double swipeMinimalHeight = 0.0;
+                    double swipeMaximalHeight = 0.0;
+                    int swipeMinimalDuration = 0;
+                    int swipeMaximalDuration = 0;
+                    string eventName = "";
+                    string methodName = "";
+                    string configType = "Voice";
+                    List<string> scale = new List<string>();
+                    int quantityOfNotes = 0;
+                    bool isHorizontal = false;
+                    string keyWord = parsedData[i][1];
+                    string voiceCommand = parsedData[i][2];
+
+                    configList.Add(new ConfigContainer(ConvertJointNameToType(joint),
+                                                       swipeMinimalLength,
+                                                       swipeMaximalLength,
+                                                       swipeMinimalHeight,
+                                                       swipeMaximalHeight,
+                                                       swipeMinimalDuration,
+                                                       swipeMaximalDuration,
+                                                       eventName,
+                                                       methodName,
+                                                       configType,
+                                                       scale,
+                                                       quantityOfNotes,
+                                                       isHorizontal,
+                                                       keyWord,
+                                                       voiceCommand));
+                }
+                else if (parsedData[i][0] == "Event")
+                {
+                    string joint = parsedData[i][1];
+                    double swipeMinimalLength = 0.0;
+                    double swipeMaximalLength = 0.0;
+                    double swipeMinimalHeight = 0.0;
+                    double swipeMaximalHeight = 0.0;
+                    int swipeMinimalDuration = 0;
+                    int swipeMaximalDuration = 0;
+                    string eventName = parsedData[i][2];
+                    string methodName = parsedData[i][3];
+                    string configType = "Event";
+                    List<string> scale = new List<string>();
+                    int quantityOfNotes = 0;
+                    bool isHorizontal = false;
+                    string keyWord = "";
+                    string voiceCommand = "";
+
+                    configList.Add(new ConfigContainer(ConvertJointNameToType(joint),
+                                                       swipeMinimalLength,
+                                                       swipeMaximalLength,
+                                                       swipeMinimalHeight,
+                                                       swipeMaximalHeight,
+                                                       swipeMinimalDuration,
+                                                       swipeMaximalDuration,
+                                                       eventName,
+                                                       methodName,
+                                                       configType,
+                                                       scale,
+                                                       quantityOfNotes,
+                                                       isHorizontal,
+                                                       keyWord,
+                                                       voiceCommand));
                 }
             }
 
@@ -91,7 +222,6 @@ namespace Kinesthesia.Model.ConfigManager
                     return JointType.HandRight;
                 case "HandLeft":
                     return JointType.HandLeft;
-
             }
             return JointType.Head;
         }

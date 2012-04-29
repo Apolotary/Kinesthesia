@@ -62,6 +62,8 @@ namespace Kinesthesia
         private bool shouldRecognizeVoice = false;
 
         private string[] notes = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+        private string[] keyWords;
+        private Dictionary<string, string> voiceCommands;
         private int currNote = 0;
         private int currOctave = 5;
         private int currVelocity = 80;
@@ -108,18 +110,17 @@ namespace Kinesthesia
 
             leftHandSwipeDetector = new SwipeGestureDetector();
             leftHandSwipeDetector.OnGestureDetected += OnLeftGestureDetected;
-
-            voiceCommander = new VoiceCommander("play", "stop", "swipe", "load", "save", "file", "reload", "default");
-            voiceCommander.OrderDetected += voiceCommander_OrderDetected;
             
             File.Copy(@"..\..\SupportingFiles\default.csv", Environment.CurrentDirectory + @"\default.csv", true);
+            ParseConfigs(Environment.CurrentDirectory + @"\default.csv");
 
+            voiceCommander = new VoiceCommander(keyWords);
+            voiceCommander.OrderDetected += voiceCommander_OrderDetected;
+            
             System.IO.StreamReader fileToRead = new StreamReader(Environment.CurrentDirectory + @"\cache.txt");
             lastConfigFilePath = fileToRead.ReadLine();
             lastMIDIPath = fileToRead.ReadLine();
             fileToRead.Close();
-
-            ParseConfigs(Environment.CurrentDirectory + @"\default.csv");
         }
         #endregion
 
@@ -127,43 +128,48 @@ namespace Kinesthesia
         private void voiceCommander_OrderDetected(string order)
         {
             Action action;
-            switch (order)
+            foreach (var configContainer in configurationList)
             {
-                case "play":
-                    action = new Action(PlayTrack);
-                    mainDispatcher.Invoke(action);
-                    break;
-                case "stop":
-                    action = new Action(PlayTrack);
-                    mainDispatcher.Invoke(action);
-                    break;
-                case "swipe":
-                    action = new Action(StartTracking);
-                    mainDispatcher.Invoke(action);
-                    break;
-                case "load":
-                    action = new Action(QuickLoadLastConfigFile);
-                    mainDispatcher.Invoke(action);
-                    break;
-                case "save":
-                    action = new Action(QuickSaveForConfigFile);
-                    mainDispatcher.Invoke(action);
-                    break;
-                case "file":
-                    action = new Action(QuickLoadLastMIDIFile);
-                    mainDispatcher.Invoke(action);
-                    break;
-                case "reload":
-                    action = new Action(RefreshSettingsLog);
-                    mainDispatcher.Invoke(action);
-                    break;
-                case "default":
-                    action = new Action(RestoreDefaultSettings);
-                    mainDispatcher.Invoke(action);
-                    break;
+                if (configContainer.ConfigType == "Voice")
+                {
+                    if (configContainer.KeyWord == order)
+                    {
+                        switch (configContainer.VoiceCommand)
+                        {
+                            case "PlayTrack":
+                                action = new Action(PlayTrack);
+                                mainDispatcher.Invoke(action);
+                                break;
+                            case "StartTracking":
+                                action = new Action(StartTracking);
+                                mainDispatcher.Invoke(action);
+                                break;
+                            case "QuickLoadLastConfigFile":
+                                action = new Action(QuickLoadLastConfigFile);
+                                mainDispatcher.Invoke(action);
+                                break;
+                            case "QuickSaveForConfigFile":
+                                action = new Action(QuickSaveForConfigFile);
+                                mainDispatcher.Invoke(action);
+                                break;
+                            case "QuickLoadLastMIDIFile":
+                                action = new Action(QuickLoadLastMIDIFile);
+                                mainDispatcher.Invoke(action);
+                                break;
+                            case "RefreshSettingsLog":
+                                action = new Action(RefreshSettingsLog);
+                                mainDispatcher.Invoke(action);
+                                break;
+                            case "RestoreDefaultSettings":
+                                action = new Action(RestoreDefaultSettings);
+                                mainDispatcher.Invoke(action);
+                                break;
+                        }
+                    }
+                }
             }
         }
-        
+
         void OnRightGestureDetected(string gesture, Point p)
         {
             logBlock.Text += "\n" + "RIGHT_HAND" + gesture  +
@@ -323,12 +329,15 @@ namespace Kinesthesia
                 {
                     //stop sensor 
                     sensor.Stop();
+                    
 
                     //stop audio if not null
                     if (sensor.AudioSource != null)
                     {
                         sensor.AudioSource.Stop();
                     }
+
+                    sensor.Dispose();
                 }
             }
         }
@@ -453,6 +462,9 @@ namespace Kinesthesia
 
             settingsLog.Text = "";
 
+            List<string> keys = new List<string>();
+            voiceCommands = new Dictionary<string, string>();
+
             for (int i = 0; i < configurationList.Count(); i++)
             {
                 ConfigContainer configContainer = configurationList[i];
@@ -516,6 +528,7 @@ namespace Kinesthesia
                 }
             }
             settingsLog.Text += "---\n";
+            
             for (int i = 0; i < configurationList.Count(); i++)
             {
                 ConfigContainer configContainer = configurationList[i];
@@ -529,6 +542,72 @@ namespace Kinesthesia
                         settingsLog.Text += "\n";
                     }
                 }
+                else if (configContainer.ConfigType == "Scale")
+                {
+                    settingsLog.Text += "Scale" + ", ";
+
+                    notes = new string[configContainer.Scale.Count()];
+
+                    for (int k = 0; k < configContainer.Scale.Count(); k++ )
+                    {
+                        if (k != configContainer.Scale.Count() - 1)
+                        {
+                            settingsLog.Text += configContainer.Scale[k] + ", ";
+                        }
+                        else
+                        {
+                            settingsLog.Text += configContainer.Scale[k];
+                        }
+                        notes[k] = configContainer.Scale[k];
+                    }
+                    
+                    if (i != configurationList.Count() - 1)
+                    {
+                        settingsLog.Text += "\n";
+                    }
+
+                    ScrollTheBox();
+                }
+                else if (configContainer.ConfigType == "Note")
+                {
+                    settingsLog.Text += "Note" + ", " + configContainer.QuantityOfNotes + ", ";
+                    if (configContainer.IsHorizontal)
+                    {
+                        settingsLog.Text += "Horizontal";
+                    }
+                    else
+                    {
+                        settingsLog.Text += "Vertical";
+                    }
+
+                    if (i != configurationList.Count() - 1)
+                    {
+                        settingsLog.Text += "\n";
+                    }
+
+                    ScrollTheBox();
+                }
+                else if (configContainer.ConfigType == "Voice")
+                {
+                    settingsLog.Text += "Voice" + ", " + configContainer.KeyWord + ", " + configContainer.VoiceCommand;
+
+                    keys.Add(configContainer.KeyWord);
+
+                    voiceCommands.Add(configContainer.KeyWord, configContainer.VoiceCommand);
+
+                    if (i != configurationList.Count() - 1)
+                    {
+                        settingsLog.Text += "\n";
+                    }
+
+                    ScrollTheBox();
+                }
+            }
+            keyWords = new string[keys.Count()];
+
+            for (int i = 0; i < keys.Count(); i++ )
+            {
+                keyWords[i] = keys[i];
             }
 
             File.CreateText(Environment.CurrentDirectory + "\\temp.csv").Dispose();

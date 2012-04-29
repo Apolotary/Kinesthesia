@@ -1,0 +1,147 @@
+<h3 id="kinesthesia"><strong>Kinesthesia</strong></h3>
+<p><em>a simple yet configurable toolkit that works with Kinect and interprets gesture recognition data into MIDI signals</em></p>
+<hr />
+<p><a href="http://www.youtube.com/user/apolotary">video demos</a></p>
+<hr />
+<h2 id="versions">Versions</h2>
+<p><strong>v 0.5</strong> (current version)</p>
+<ul>
+<li>Gesture recognition is now handled by <a href="http://kinecttoolbox.codeplex.com">KinectToolbox</a>, which gives faster response and more customizable properties for gestures.</li>
+<li>Configuration interface for gesture behavior. (see <strong>Configuration Files</strong> part for more info)</li>
+<li>Voice command control (see <strong>Voice Command Controls</strong> part for more info)</li>
+<li>Save / load / refresh / restore / quick save / quick load methods for configuration files (see <strong>Configuration Files</strong> part for more info)</li>
+</ul>
+<p><strong>v 0.4</strong></p>
+<ul>
+<li>MIDI-player which supports MIDI-files parsed to CSV (see <strong>Parsing MIDI to CSV</strong> part for more info)</li>
+<li>Multiple MIDI-tracks control support</li>
+<li>Velocity change control for each hand (e.g. left hand changes the velocity for the piano part played by left hand and so on)</li>
+<li>File browser and simple CSV-parser</li>
+</ul>
+<p><strong>v 0.3</strong></p>
+<ul>
+<li>Simplified gesture recognition</li>
+<li>Additions in MIDI-class</li>
+</ul>
+<p><strong>v 0.2</strong></p>
+<ul>
+<li>Kinect skeletal tracking basics</li>
+<li>Interpreting hands coordinates as notes</li>
+</ul>
+<p><strong>v 0.1</strong></p>
+<ul>
+<li>Basic MIDI-interaction</li>
+<li>Some base classes</li>
+</ul>
+<table>
+<col width="13%" />
+<tbody>
+<tr class="odd">
+<td align="left">## Configuration Files ##</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Gestures and properties</strong></td>
+</tr>
+<tr class="odd">
+<td align="left">Kinesthesia provides a simple configuration interface for better control on gesture's behavior. Currently there're four types of gestures binded for each hand, they're:</td>
+</tr>
+<tr class="even">
+<td align="left">- SwipeUp - SwipeDown - SwipeToRight - SwipeToLeft</td>
+</tr>
+<tr class="odd">
+<td align="left">Each type is handled by leftHandSwipeDetector and rightHandSwipeDetector which are binded to left and right hands correspondingly. In order to configure detector's behavior, there're 6 properties:</td>
+</tr>
+<tr class="even">
+<td align="left">- Swipe Minimal Length - Swipe Maximal Length - Swipe Minimal Height - Swipe Maximal Height - Swipe Minimal Duration - Swipe Maximal Duration</td>
+</tr>
+<tr class="odd">
+<td align="left">where:</td>
+</tr>
+<tr class="even">
+<td align="left">- Length - minimal or maximal horizontal path length for swipe gesture - Height - minimal or maximal vertical path length for swipe gesture - Duration - minimal or maximal duration for swipe gesture</td>
+</tr>
+<tr class="odd">
+<td align="left">These properties can be configured with appropriate sliders for each hand. <strong>Length and Height</strong> are doubles and their range is <strong>from 0 to 1</strong> (because original coordinates provided by Kinect SDK are very small floating point numbers). <strong>Duration</strong> is measured in miliseconds and its range is <strong>from 0 to 3000</strong>.</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Generated configuration Files</strong></td>
+</tr>
+<tr class="odd">
+<td align="left">In order to load default configuration, Kinesthesia loads <strong>default.csv</strong> from the current directory where executable file is located.</td>
+</tr>
+<tr class="even">
+<td align="left">Kinesthesia also creates a temporary backup file <strong>temp.csv</strong>, which is rewriten every time when new configuration file is loaded.</td>
+</tr>
+<tr class="odd">
+<td align="left">When quicksaving, Kinesthesia creates a new .csv configuration file using current UNIX time.</td>
+</tr>
+<tr class="even">
+<td align="left">When closing, Kinesthesia creates or overwrites cache.txt file, which contains paths for the latest used configuration / MIDI files.</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Custom configuration files</strong></td>
+</tr>
+<tr class="even">
+<td align="left">Configuration file can be created in any text editor or even edited withing the Settings Log block within the software. It should have .csv extension and follow this standard:</td>
+</tr>
+<tr class="odd">
+<td align="left">The first two lines are configuration lines for two gesture detectors:</td>
+</tr>
+<tr class="even">
+<td align="left"><code>HandRight, 0.4, 0.2, 0.1, 0.2, 250, 1500</code> <code>HandLeft,  0.4, 0.2, 0.1, 0.2, 250, 1500</code></td>
+</tr>
+<tr class="odd">
+<td align="left">where the parameters are:</td>
+</tr>
+<tr class="even">
+<td align="left">- Hand that will be tracked: <strong>HandRight</strong> or <strong>HandLeft</strong> - Swipe Minimal Length - Swipe Maximal Length - Swipe Minimal Height - Swipe Maximal Height - Swipe Minimal Duration - Swipe Maximal Duration</td>
+</tr>
+<tr class="odd">
+<td align="left">The remaining 8 lines cover events and methods which should be called.</td>
+</tr>
+<tr class="even">
+<td align="left"><code>HandRight, SwipeToRight, SendNote</code> <code>HandRight, SwipeToLeft,  SendNote</code> <code>HandRight, SwipeUp,      SendNote</code> <code>HandRight, SwipeDown,    SendNote</code> <code>HandLeft,  SwipeToRight, ChangeVolume</code> <code>HandLeft,  SwipeToLeft,  ChangeVolume</code> <code>HandLeft,  SwipeUp,      BendPitch</code> <code>HandLeft,  SwipeDown,    BendPitch</code></td>
+</tr>
+<tr class="odd">
+<td align="left">The parameters are:</td>
+</tr>
+<tr class="even">
+<td align="left">- Hand that will be tracked: <strong>HandRight</strong> or <strong>HandLeft</strong> - Type of Swipe Gesture: <strong>SwipeUp</strong>, <strong>SwipeDown</strong>, <strong>SwipeToLeft</strong>, <strong>SwipeToRight</strong> - Method that will be called when this gesture will be detected: <strong>SendNote</strong>, <strong>BendPitch</strong>, <strong>ChangeVolume</strong>, <strong>VelocityChange</strong> (available only for MIDI tracks) and <strong>DoNothing</strong> (if you don't want to call any method)</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Quick Loading / Quick Saving / Refreshing / Restoring defaults</strong></td>
+</tr>
+<tr class="even">
+<td align="left">- <strong>Quick Loading</strong> -- loads the last configuration or MIDI file. The path is stored in cache.txt - <strong>Quick Saving</strong> -- saves current configuration to the current folder by creating a .csv file with current unix time as file's name - <strong>Refreshing</strong> -- reloads Settings log, so it could match the changes in detector's properties - <strong>Restoring defaults</strong> -- reloads configuration from default.csv file</td>
+</tr>
+</tbody>
+</table>
+<h2 id="voice-command-controls">Voice Command Controls</h2>
+<p>Currently, this project uses voice recognition class provided by <a href="http://kinecttoolbox.codeplex.com">KinectToolbox</a>. Kinesthesia can recognize the following commands:</p>
+<ul>
+<li><strong>Play</strong> -- plays the current parsed MIDI track</li>
+<li><strong>Stop</strong> -- stops playing current track</li>
+<li><strong>Swipe</strong> -- turns on gesture recognition (unfortunately the library wasn't able to recognize the word &quot;track&quot;)</li>
+<li><strong>Load</strong> -- load last configuration file</li>
+<li><strong>Save</strong> -- quickly save current configuration file</li>
+<li><strong>File</strong> -- load last MIDI(CSV) file</li>
+<li><strong>Reload</strong> -- reload settings log</li>
+<li><strong>Default</strong> -- restore default configuration</li>
+</ul>
+<hr />
+<h2 id="parsing-midi-to-csv">Parsing MIDI to CSV</h2>
+<p>To parse a binary MIDI file to CSV, you'll need <a href="http://www.fourmilab.ch/webtools/midicsv/">this command line tool</a></p>
+<p>Just copy the MIDI file to the folder with Midicsv.exe and execute command like this:</p>
+<p><code>Midicsv.exe example.mid example.csv</code></p>
+<p>where the first item is the converter itself, second is the MIDI-file and third is the desired output name</p>
+<p>Then, choose the resulted MIDI-file via Open dialogue. Currently this file should have at least three tracks, otherwise the program woud crash. However you can change the quantity of tracks within the MainWindow.xaml.cs class</p>
+<hr />
+<p>for Kinect and WPF-related stuff I use:</p>
+<ul>
+<li>KinectSDK</li>
+<li>KinectToolbox</li>
+<li>Examples from KinectforWindowsSDK series</li>
+</ul>
+<p>for MIDI-related stuff I use this awesome library: <a href="http://code.google.com/p/midi-dot-net/">midi-dot-net</a></p>
+<p>for virtual port I'm currently using <a href="http://nerds.de/en/loopbe1.html">loopbe1</a></p>
+<p>however there's also a good analogue for it: <a href="http://www.midiox.com/myoke.htm">midiyoke</a></p>

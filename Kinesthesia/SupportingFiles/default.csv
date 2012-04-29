@@ -1,10 +1,20 @@
-﻿HandRight, 0.4, 0.2, 0.1, 0.2, 250, 1500
-HandLeft,  0.4, 0.2, 0.1, 0.2, 250, 1500
-HandRight, SwipeToRight, SendNote
-HandRight, SwipeToLeft,  SendNote
-HandRight, SwipeUp,      SendNote
-HandRight, SwipeDown,    SendNote
-HandLeft,  SwipeToRight, ChangeVolume
-HandLeft,  SwipeToLeft,  ChangeVolume
-HandLeft,  SwipeUp,      BendPitch
-HandLeft,  SwipeDown,    BendPitch
+﻿Calibration, HandRight, 0.4, 0.2, 0.1, 0.2, 250, 1500
+Calibration, HandLeft,  0.4, 0.2, 0.1, 0.2, 250, 1500
+Scale, C, C#, D, D#, E, F, F#, G, G#, A, A#, B
+Note, 60, Horizontal
+Event, HandRight, SwipeToRight, SendNote
+Event, HandRight, SwipeToLeft,  SendNote
+Event, HandRight, SwipeUp,      SendNote
+Event, HandRight, SwipeDown,    SendNote
+Event, HandLeft,  SwipeToRight, ChangeVolume
+Event, HandLeft,  SwipeToLeft,  ChangeVolume
+Event, HandLeft,  SwipeUp,      BendPitch
+Event, HandLeft,  SwipeDown,    BendPitch
+Voice, play,    PlayTrack
+Voice, stop,    PlayTrack
+Voice, track,   StartTracking
+Voice, load,    QuickLoadLastConfigFile
+Voice, save,    QuickSaveForConfigFile
+Voice, midi,    QuickLoadLastMIDIFile
+Voice, reload,  RefreshSettings
+Voice, restore, RestoreDefaultSettings

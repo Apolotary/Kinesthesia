@@ -1,0 +1,307 @@
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 {\b Kinesthesia}\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\i a simple yet configurable toolkit that works with Kinect and interprets gesture recognition data into MIDI signals}\par}
+{\pard \qc \f0 \sa180 \li0 \fi0 \emdash\emdash\emdash\emdash\emdash\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\field{\*\fldinst{HYPERLINK "http://www.youtube.com/user/apolotary"}}{\fldrslt{\ul
+video demos
+}}}
+\par}
+{\pard \qc \f0 \sa180 \li0 \fi0 \emdash\emdash\emdash\emdash\emdash\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Versions\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b v 0.5} (current version)\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Gesture recognition is now handled by {\field{\*\fldinst{HYPERLINK "http://kinecttoolbox.codeplex.com"}}{\fldrslt{\ul
+KinectToolbox
+}}}
+, which gives faster response and more customizable properties for gestures.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Configuration interface for gesture behavior. (see {\b Configuration Files} part for more info)\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Voice command control (see {\b Voice Command Controls} part for more info)\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Save / load / refresh / restore / quick save / quick load methods for configuration files (see {\b Configuration Files} part for more info)\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b v 0.4}\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab MIDI-player which supports MIDI-files parsed to CSV (see {\b Parsing MIDI to CSV} part for more info)\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Multiple MIDI-tracks control support\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Velocity change control for each hand (e.g. left hand changes the velocity for the piano part played by left hand and so on)\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab File browser and simple CSV-parser\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b v 0.3}\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Simplified gesture recognition\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Additions in MIDI-class\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b v 0.2}\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Kinect skeletal tracking basics\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Interpreting hands coordinates as notes\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b v 0.1}\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Basic MIDI-interaction\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Some base classes\sa180\par}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 ## Configuration Files ##\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 {\b Gestures and properties}\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 Kinesthesia provides a simple configuration interface for better control on gesture's behavior. Currently there're four types of gestures binded for each hand, they're:\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 - SwipeUp - SwipeDown - SwipeToRight - SwipeToLeft\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 Each type is handled by leftHandSwipeDetector and rightHandSwipeDetector which are binded to left and right hands correspondingly. In order to configure detector's behavior, there're 6 properties:\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 - Swipe Minimal Length - Swipe Maximal Length - Swipe Minimal Height - Swipe Maximal Height - Swipe Minimal Duration - Swipe Maximal Duration\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 where:\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 - Length - minimal or maximal horizontal path length for swipe gesture - Height - minimal or maximal vertical path length for swipe gesture - Duration - minimal or maximal duration for swipe gesture\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 These properties can be configured with appropriate sliders for each hand. {\b Length and Height} are doubles and their range is {\b from 0 to 1} (because original coordinates provided by Kinect SDK are very small floating point numbers). {\b Duration} is measured in miliseconds and its range is {\b from 0 to 3000}.\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 {\b Generated configuration Files}\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 In order to load default configuration, Kinesthesia loads {\b default.csv} from the current directory where executable file is located.\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 Kinesthesia also creates a temporary backup file {\b temp.csv}, which is rewriten every time when new configuration file is loaded.\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 When quicksaving, Kinesthesia creates a new .csv configuration file using current UNIX time.\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 When closing, Kinesthesia creates or overwrites cache.txt file, which contains paths for the latest used configuration / MIDI files.\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 {\b Custom configuration files}\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 Configuration file can be created in any text editor or even edited withing the Settings Log block within the software. It should have .csv extension and follow this standard:\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 The first two lines are configuration lines for two gesture detectors:\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 {\f1 HandRight, 0.4, 0.2, 0.1, 0.2, 250, 1500} {\f1 HandLeft,  0.4, 0.2, 0.1, 0.2, 250, 1500}\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 where the parameters are:\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 - Hand that will be tracked: {\b HandRight} or {\b HandLeft} - Swipe Minimal Length - Swipe Maximal Length - Swipe Minimal Height - Swipe Maximal Height - Swipe Minimal Duration - Swipe Maximal Duration\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 The remaining 8 lines cover events and methods which should be called.\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 {\f1 HandRight, SwipeToRight, SendNote} {\f1 HandRight, SwipeToLeft,  SendNote} {\f1 HandRight, SwipeUp,      SendNote} {\f1 HandRight, SwipeDown,    SendNote} {\f1 HandLeft,  SwipeToRight, ChangeVolume} {\f1 HandLeft,  SwipeToLeft,  ChangeVolume} {\f1 HandLeft,  SwipeUp,      BendPitch} {\f1 HandLeft,  SwipeDown,    BendPitch}\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 The parameters are:\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 - Hand that will be tracked: {\b HandRight} or {\b HandLeft} - Type of Swipe Gesture: {\b SwipeUp}, {\b SwipeDown}, {\b SwipeToLeft}, {\b SwipeToRight} - Method that will be called when this gesture will be detected: {\b SendNote}, {\b BendPitch}, {\b ChangeVolume}, {\b VelocityChange} (available only for MIDI tracks) and {\b DoNothing} (if you don't want to call any method)\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 {\b Quick Loading / Quick Saving / Refreshing / Restoring defaults}\par}
+\cell}
+}
+\intbl\row}
+{
+\trowd \trgaph120
+\cellx1200
+\trkeep\intbl
+{
+{\intbl {\pard \ql \f0 \sa0 \li0 \fi0 - {\b Quick Loading} -- loads the last configuration or MIDI file. The path is stored in cache.txt - {\b Quick Saving} -- saves current configuration to the current folder by creating a .csv file with current unix time as file's name - {\b Refreshing} -- reloads Settings log, so it could match the changes in detector's properties - {\b Restoring defaults} -- reloads configuration from default.csv file\par}
+\cell}
+}
+\intbl\row}
+{\pard \ql \f0 \sa180 \li0 \fi0 \par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Voice Command Controls\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Currently, this project uses voice recognition class provided by {\field{\*\fldinst{HYPERLINK "http://kinecttoolbox.codeplex.com"}}{\fldrslt{\ul
+KinectToolbox
+}}}
+. Kinesthesia can recognize the following commands:\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Play} -- plays the current parsed MIDI track\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Stop} -- stops playing current track\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Swipe} -- turns on gesture recognition (unfortunately the library wasn't able to recognize the word "track")\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Load} -- load last configuration file\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Save} -- quickly save current configuration file\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b File} -- load last MIDI(CSV) file\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Reload} -- reload settings log\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Default} -- restore default configuration\sa180\par}
+{\pard \qc \f0 \sa180 \li0 \fi0 \emdash\emdash\emdash\emdash\emdash\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Parsing MIDI to CSV\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 To parse a binary MIDI file to CSV, you'll need {\field{\*\fldinst{HYPERLINK "http://www.fourmilab.ch/webtools/midicsv/"}}{\fldrslt{\ul
+this command line tool
+}}}
+\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Just copy the MIDI file to the folder with Midicsv.exe and execute command like this:\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\f1 Midicsv.exe example.mid example.csv}\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 where the first item is the converter itself, second is the MIDI-file and third is the desired output name\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Then, choose the resulted MIDI-file via Open dialogue. Currently this file should have at least three tracks, otherwise the program woud crash. However you can change the quantity of tracks within the MainWindow.xaml.cs class\par}
+{\pard \qc \f0 \sa180 \li0 \fi0 \emdash\emdash\emdash\emdash\emdash\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 for Kinect and WPF-related stuff I use:\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab KinectSDK\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab KinectToolbox\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Examples from KinectforWindowsSDK series\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 for MIDI-related stuff I use this awesome library: {\field{\*\fldinst{HYPERLINK "http://code.google.com/p/midi-dot-net/"}}{\fldrslt{\ul
+midi-dot-net
+}}}
+\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 for virtual port I'm currently using {\field{\*\fldinst{HYPERLINK "http://nerds.de/en/loopbe1.html"}}{\fldrslt{\ul
+loopbe1
+}}}
+\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 however there's also a good analogue for it: {\field{\*\fldinst{HYPERLINK "http://www.midiox.com/myoke.htm"}}{\fldrslt{\ul
+midiyoke
+}}}
+\par}
+
