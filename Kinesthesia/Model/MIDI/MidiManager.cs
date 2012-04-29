@@ -58,7 +58,7 @@ namespace Kinesthesia.Model.MIDI
         {
             List<string> devices = new List<string>();
 
-            foreach (InputDevice device in InputDevice.InstalledDevices)
+            foreach (OutputDevice device in OutputDevice.InstalledDevices)
             {
                 devices.Add(device.Name);
             }
@@ -66,9 +66,23 @@ namespace Kinesthesia.Model.MIDI
             return devices;
         }
 
-        public void ChangeMidiDevice(int deviceNumber)
+        public void ChangeMidiDevice(string deviceName)
         {
-            _outputDevice = OutputDevice.InstalledDevices[deviceNumber];
+            if (_outputDevice.IsOpen) _outputDevice.Close();
+            for (int i = 0; i < OutputDevice.InstalledDevices.Count(); ++i)
+            {
+                OutputDevice device = OutputDevice.InstalledDevices[i];
+                if (deviceName == device.Name)
+                {
+                    _outputDevice = device;
+                }
+            }
+            _outputDevice.Open();
+        }
+
+        public string CurrentOutputDeviceName()
+        {
+            return _outputDevice.Name;
         }
         
         /// <summary>

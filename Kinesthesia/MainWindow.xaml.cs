@@ -131,6 +131,7 @@ namespace Kinesthesia
             voiceCommander.OrderDetected += voiceCommander_OrderDetected;
 
             devicesComboBox.ItemsSource = midMan.GetTheListOfMidiDevices();
+            devicesComboBox.SelectedItem = midMan.CurrentOutputDeviceName();
             
             System.IO.StreamReader fileToRead = new StreamReader(Environment.CurrentDirectory + @"\cache.txt");
             lastConfigFilePath = fileToRead.ReadLine();
@@ -1055,5 +1056,19 @@ namespace Kinesthesia
         }
 
         #endregion
+
+        private void devicesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            List<string> midDevices = midMan.GetTheListOfMidiDevices();
+
+            for (int i = 0; i < midDevices.Count(); ++i)
+            {
+                if(midDevices[i] == (string)e.AddedItems[0])
+                {
+                    midMan.ChangeMidiDevice((string)e.AddedItems[0]);
+                    break;
+                }
+            }
+        }
     }
 }
